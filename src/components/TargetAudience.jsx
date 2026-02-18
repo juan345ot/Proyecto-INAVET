@@ -3,12 +3,12 @@ import { CheckCircle } from 'lucide-react';
 
 const TargetAudience = () => {
     return (
-        <section className="py-24 bg-primary relative overflow-hidden">
+        <section className="py-16 bg-primary relative overflow-hidden">
             <div className="container mx-auto px-4 relative z-10">
                 <div className="bg-secondary p-10 md:p-16 rounded-4xl shadow-premium max-w-5xl mx-auto text-white relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 group-hover:scale-125 transition-transform duration-1000"></div>
                     
-                    <h2 className="text-3xl md:text-4xl font-black mb-12 text-center uppercase tracking-tight text-primary">¿PARA QUIÉN ES ESTA FORMACIÓN?</h2>
+                    <h2 className="text-3xl md:text-4xl font-black mb-10 text-center uppercase tracking-tight text-primary">¿PARA QUIÉN ES ESTA FORMACIÓN?</h2>
                     
                     <div className="grid md:grid-cols-2 gap-10">
                         <div className="space-y-8">
@@ -33,7 +33,7 @@ const TargetAudience = () => {
                         </div>
                     </div>
                     
-                    <div className="mt-16 text-center">
+                    <div className="mt-12 text-center">
                         <span className="bg-primary text-secondary px-8 py-4 rounded-full font-black text-xl uppercase tracking-widest shadow-xl inline-block transform hover:scale-105 transition-transform">
                             No se requieren conocimientos previos
                         </span>

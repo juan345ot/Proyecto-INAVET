@@ -3,8 +3,7 @@ import { CONTACT_INFO } from '../constants/data';
 
 const FinalCTA = () => {
     return (
-        <section id="contacto" className="py-24 bg-primary relative overflow-hidden">
-            {/* Elementos decorativos de fondo */}
+        <section id="contacto" className="py-16 bg-primary relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-primary to-secondary opacity-20"></div>
             <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-secondary/5 rounded-full blur-3xl"></div>
@@ -18,7 +17,7 @@ const FinalCTA = () => {
                         Estamos listos para asesorarte y ayudarte a dar el primer paso en tu carrera profesional.
                     </p>
                     
-                    <div className="flex flex-col items-center gap-4 mb-20">
+                    <div className="flex flex-col items-center gap-4 mb-12">
                         <button 
                             className="group relative bg-[#25D366] hover:bg-[#20ba5a] text-white font-black py-5 px-12 rounded-full text-xl shadow-[0_10px_20px_-5px_rgba(37,211,102,0.4)] transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3 overflow-hidden"
                             onClick={() => window.open(`https://wa.me/${CONTACT_INFO.whatsapp}`, '_blank')}
@@ -29,7 +28,7 @@ const FinalCTA = () => {
                             </svg>
                             Inscribirme / Pedir información
                         </button>
-                        <p className="text-sm font-bold text-[#25D366] animate-pulse">
+                        <p className="text-sm font-bold bg-secondary text-[#25D366] rounded-full px-4 py-2 inline-block shadow-md">
                             ¡Respondemos al instante!
                         </p>
                     </div>

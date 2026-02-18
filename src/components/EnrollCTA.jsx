@@ -3,9 +3,9 @@ import { ArrowRight } from 'lucide-react';
 
 const EnrollCTA = () => {
     return (
-        <section className="py-24 bg-primary relative overflow-hidden">
+        <section className="py-16 bg-primary relative overflow-hidden">
             <div className="container mx-auto px-4 text-center">
-                <h2 className="text-3xl md:text-4xl font-black text-white mb-10 uppercase tracking-tight font-display">
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-8 uppercase tracking-tight font-display">
                     Comenzá tu formación en Auxiliar Veterinario hoy
                 </h2>
                 <button 

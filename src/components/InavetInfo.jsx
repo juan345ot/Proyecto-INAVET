@@ -2,12 +2,11 @@ import React from 'react';
 
 const InavetInfo = () => {
     return (
-        <section id="inavet" className="py-24 bg-primary relative overflow-hidden">
+        <section id="inavet" className="py-16 bg-primary relative overflow-hidden">
             {/* Decorative background circle */}
             <div className="absolute top-24 -right-24 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
             
             <div className="container mx-auto px-4 relative z-10">
-                {/* ¿QUÉ ES INAVET? */}
                 <div className="text-center">
                     <h2 className="text-3xl md:text-5xl font-black text-white mb-10 uppercase tracking-tighter">¿QUÉ ES INAVET?</h2>
                     <div className="max-w-4xl mx-auto text-white text-xl md:text-2xl leading-relaxed space-y-8 font-medium">

@@ -3,7 +3,6 @@ import React from 'react';
 const Hero = () => {
     return (
         <section id="inicio" className="relative h-screen flex items-center justify-center overflow-hidden">
-            {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 <img 
                     src="https://images.unsplash.com/photo-1599443015574-be5fe8a05783?ixlib=rb-1.2.1&auto=format&fit=crop&w=1400&q=80&fm=webp" 
@@ -38,7 +37,6 @@ const Hero = () => {
                 </div>
             </div>
             
-            {/* Scroll Indicator */}
             <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce opacity-50">
                 <div className="w-1 h-12 bg-linear-to-b from-primary to-transparent rounded-full"></div>
             </div>

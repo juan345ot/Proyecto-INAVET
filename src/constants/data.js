@@ -39,6 +39,37 @@ export const FAQ_DATA = [
     }
 ];
 
+export const MODULES_DATA = [
+    {
+        title: "Anatomía y semiología veterinaria",
+        description: "Estudio de las bases anatómicas y reconocimiento de signos clínicos fundamentales para la asistencia en consulta veterinaria."
+    },
+    {
+        title: "Procedimientos e instrumental veterinario",
+        description: "Conocimiento y uso del instrumental básico, materiales y maniobras esenciales en la práctica auxiliar clínica."
+    },
+    {
+        title: "Primeros auxilios veterinarios",
+        description: "Actuación inicial ante situaciones de urgencia, contención del paciente y asistencia en emergencias frecuentes."
+    },
+    {
+        title: "Cirugía y asistencia quirúrgica veterinaria",
+        description: "Principios básicos del ámbito quirúrgico, preparación del paciente, esterilización y apoyo al profesional durante procedimientos."
+    },
+    {
+        title: "Farmacología veterinaria",
+        description: "Nociones sobre medicamentos de uso frecuente, vías de administración y rol del auxiliar en su correcta aplicación."
+    },
+    {
+        title: "Enfermedades infecciosas veterinarias",
+        description: "Conceptos fundamentales sobre virus, bacterias y parásitos, prevención y medidas básicas de control sanitario."
+    },
+    {
+        title: "Instalaciones y organización del ámbito veterinario",
+        description: "Funcionamiento de clínicas y consultorios, organización del espacio, bioseguridad y dinámica del trabajo profesional."
+    }
+];
+
 export const MODALITY_DATA = {
     features: [
         {

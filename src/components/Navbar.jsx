@@ -46,7 +46,6 @@ const Navbar = () => {
                 : 'bg-transparent border-transparent h-24 md:h-32'
             }`}
         >
-            {/* Scroll Progress Bar */}
             <div 
                 className="absolute bottom-0 left-0 h-[3px] bg-primary transition-all duration-200 z-50"
                 style={{ width: `${scrollProgress}%` }}
@@ -54,7 +53,6 @@ const Navbar = () => {
 
             <div className="container mx-auto px-6 h-full flex items-center justify-between transition-all duration-500">
                     
-                    {/* Logo Section */}
                     <div className="flex items-center gap-4 group cursor-pointer" onClick={() => scrollToSection('inicio')}>
                         <div className="relative">
                             <div className="absolute inset-0 bg-primary blur-2xl opacity-0 group-hover:opacity-40 transition-opacity"></div>
@@ -75,7 +73,6 @@ const Navbar = () => {
                         </div>
                     </div>
 
-                {/* Desktop Menu */}
                 <div className="hidden md:flex items-center space-x-2">
                     {navLinks.map((link) => (
                         <button
@@ -107,7 +104,6 @@ const Navbar = () => {
                             </button>
                 </div>
 
-                {/* Mobile Menu Button */}
                 <div className="md:hidden">
                     <button
                         onClick={() => setIsOpen(!isOpen)}
@@ -120,7 +116,6 @@ const Navbar = () => {
                 </div>
             </div>
 
-            {/* Mobile Menu Overlay */}
             <div className={`md:hidden absolute top-full left-0 w-full transition-all duration-500 ease-in-out overflow-hidden ${
                 isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
             }`}>
