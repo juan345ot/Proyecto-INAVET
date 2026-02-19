@@ -7,6 +7,8 @@ import Modality from './components/Modality';
 import TargetAudience from './components/TargetAudience';
 import ScrollReveal from './components/ScrollReveal';
 import WhatsAppButton from './components/WhatsAppButton';
+import Outcome from './components/Outcome';
+import AcademicDirection from './components/AcademicDirection';
 
 const Pricing = lazy(() => import('./components/Pricing'));
 const EnrollCTA = lazy(() => import('./components/EnrollCTA'));
@@ -21,7 +23,11 @@ function App() {
       <Hero />
       
       <ScrollReveal>
-        <InavetInfo />
+        <TargetAudience />
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <Outcome />
       </ScrollReveal>
 
       <ScrollReveal delay={100}>
@@ -33,7 +39,11 @@ function App() {
       </ScrollReveal>
 
       <ScrollReveal>
-        <TargetAudience />
+        <InavetInfo />
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <AcademicDirection />
       </ScrollReveal>
       
       <Suspense fallback={

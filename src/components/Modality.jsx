@@ -67,8 +67,8 @@ const Modality = () => {
                                 </button>
                                 
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openModule === idx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                    <div className="p-5 pt-0 md:p-8 md:pt-0 px-8">
-                                        <p className="text-gray-600 leading-relaxed font-medium border-l-4 border-primary/30 pl-6 py-2 bg-primary/5 rounded-r-xl">
+                                    <div className="p-4 md:p-8 pt-0 md:pt-0">
+                                        <p className="text-gray-600 leading-relaxed font-medium border-l-4 border-primary/30 pl-4 md:pl-6 py-2 bg-primary/5 rounded-r-xl text-sm md:text-base">
                                             {module.description}
                                         </p>
                                     </div>

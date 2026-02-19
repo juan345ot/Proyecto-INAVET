@@ -1,8 +1,8 @@
-import React from 'react';
+import { ChevronDown } from 'lucide-react';
 
 const Hero = () => {
     return (
-        <section id="inicio" className="relative h-screen flex items-center justify-center overflow-hidden">
+        <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 md:pt-28 pb-12">
             <div className="absolute inset-0 z-0">
                 <img 
                     src="https://images.unsplash.com/photo-1599443015574-be5fe8a05783?ixlib=rb-1.2.1&auto=format&fit=crop&w=1400&q=80&fm=webp" 
@@ -14,24 +14,40 @@ const Hero = () => {
 
             <div className="container mx-auto px-4 z-10 text-center text-white">
                 <div className="max-w-4xl mx-auto">
-                    <h1 className="text-4xl md:text-7xl font-black mb-8 leading-tight tracking-tighter drop-shadow-2xl">
-                        Formación Online de <br/>
-                        <span className="text-primary">Auxiliar Veterinario</span>
+                    <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight tracking-tighter drop-shadow-2xl">
+                        Formate como <br/>
+                        <span className="text-primary">Auxiliar Veterinario</span> <br/>
+                        y desarrollá tu salida laboral con animales
                     </h1>
-                    <p className="text-xl md:text-2xl mb-4 max-w-2xl mx-auto text-white font-bold leading-relaxed drop-shadow-md">
-                        Capacitación integral con certificación y orientación laboral
+                    <p className="text-xl md:text-2xl mb-6 max-w-2xl mx-auto text-white font-bold leading-relaxed drop-shadow-md">
+                        Capacitación 100% online con certificación y orientación laboral
                     </p>
-                    <p className="text-base md:text-lg mb-12 max-w-2xl mx-auto text-gray-300 font-medium leading-relaxed drop-shadow-md">
-                        Estudiá desde cualquier lugar, comenzá en cualquier mes del año, con clases en vivo grabadas
-                    </p>
+                    <div className="flex flex-col items-start gap-2 max-w-md mx-auto mb-8 text-left">
+                        {[
+                            "Estudiá desde cualquier lugar",
+                            "Clases en vivo grabadas",
+                            "Comenzá en cualquier mes del año",
+                            "Sin requisitos previos"
+                        ].map((item, index) => (
+                            <div key={index} className="flex items-center gap-3">
+                                <div className="bg-primary/20 p-1 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <span className="text-lg text-gray-100 font-medium drop-shadow-md">{item}</span>
+                            </div>
+                        ))}
+                    </div>
                     <div className="flex flex-col items-center gap-6">
                         <button 
                             onClick={() => document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' })}
-                            className="group relative bg-primary hover:bg-primary-hover text-white font-black py-5 px-12 rounded-full transition-all transform hover:scale-105 shadow-[0_20px_40px_-10px_rgba(102,202,247,0.5)] mt-4 text-xl overflow-hidden"
+                            className="group relative bg-primary hover:bg-primary-hover text-white font-black py-5 px-12 rounded-full transition-all transform hover:scale-105 shadow-[0_20px_40px_-10px_rgba(102,202,247,0.5)] mt-4 text-xl overflow-hidden flex items-center gap-2"
                             aria-label="Ir a la sección de contacto para inscribirse"
                         >
                             <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                             Inscribirme / Pedir información
+                            <ChevronDown className="animate-bounce" size={24} />
                         </button>
                     </div>
                 </div>

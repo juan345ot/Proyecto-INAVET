@@ -14,21 +14,21 @@ const TargetAudience = () => {
                         <div className="space-y-8">
                             <div className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
                                 <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                <span className="text-xl font-bold">Personas sin experiencia previa</span>
+                                <span className="text-xl font-bold">Personas sin experiencia previa que desean iniciar su camino en el ámbito veterinario</span>
                             </div>
                             <div className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
                                 <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                <span className="text-xl font-bold">Quienes trabajan y necesitan horarios flexibles</span>
+                                <span className="text-xl font-bold">Quienes trabajan y necesitan una formación con horarios flexibles</span>
                             </div>
                         </div>
                         <div className="space-y-8">
                             <div className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
                                 <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                <span className="text-xl font-bold">Interesados en el área veterinaria</span>
+                                <span className="text-xl font-bold">Personas interesadas en desarrollarse en el cuidado y la salud animal</span>
                             </div>
                             <div className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
                                 <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                <span className="text-xl font-bold">Salida laboral vinculada al sector salud animal</span>
+                                <span className="text-xl font-bold">Quienes buscan una salida laboral vinculada al sector veterinario</span>
                             </div>
                         </div>
                     </div>
