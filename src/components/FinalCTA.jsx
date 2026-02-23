@@ -20,7 +20,7 @@ const FinalCTA = () => {
                     <div className="flex flex-col items-center gap-4 mb-12">
                         <button 
                             className="group relative bg-[#25D366] hover:bg-[#20ba5a] text-white font-black py-5 px-12 rounded-full text-xl shadow-[0_10px_20px_-5px_rgba(37,211,102,0.4)] transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3 overflow-hidden"
-                            onClick={() => window.open(`https://wa.me/${CONTACT_INFO.whatsapp}`, '_blank')}
+                            onClick={() => window.open(`https://wa.me/${CONTACT_INFO.whatsapp}?text=${CONTACT_INFO.whatsappMessageEncoded}`, '_blank')}
                         >
                             <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white" className="fill-current">
@@ -35,7 +35,7 @@ const FinalCTA = () => {
 
                     <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                         <a 
-                            href={`https://wa.me/${CONTACT_INFO.whatsapp}`} 
+                            href={`https://wa.me/${CONTACT_INFO.whatsapp}?text=${CONTACT_INFO.whatsappMessageEncoded}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="flex items-center justify-between p-6 bg-gray-50 rounded-3xl hover:bg-white hover:shadow-xl transition-all border border-gray-100 group"

@@ -1,9 +1,11 @@
 export const CONTACT_INFO = {
-  whatsapp: "542926451511",
-  whatsappDisplay: "2926 45-1511",
+  whatsapp: "541178292771",
+  whatsappDisplay: "+54 11 7829-2771",
   instagram: "institutoinavet",
   instagramUrl: "https://instagram.com/institutoinavet",
   email: "contacto@inavet.com", // Placeholder if needed in future
+  whatsappMessage: "Hola, quisiera más información sobre el curso de Auxiliar Veterinario",
+  whatsappMessageEncoded: "Hola,%20quisiera%20más%20información%20sobre%20el%20curso%20de%20Auxiliar%20Veterinario",
 };
 
 export const COURSE_INFO = {
