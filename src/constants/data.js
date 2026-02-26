@@ -1,11 +1,18 @@
+import auxiliar1 from "../assets/auxiliares/auxiliar1.jpg";
+import auxiliar2 from "../assets/auxiliares/auxiliar2.jpg";
+import auxiliar3 from "../assets/auxiliares/auxiliar3.jpg";
+import auxiliar4 from "../assets/auxiliares/auxiliar4.jpg";
+
 export const CONTACT_INFO = {
   whatsapp: "541178292771",
   whatsappDisplay: "+54 11 7829-2771",
   instagram: "institutoinavet",
   instagramUrl: "https://instagram.com/institutoinavet",
   email: "contacto@inavet.com", // Placeholder if needed in future
-  whatsappMessage: "Hola, quisiera más información sobre el curso de Auxiliar Veterinario",
-  whatsappMessageEncoded: "Hola,%20quisiera%20más%20información%20sobre%20el%20curso%20de%20Auxiliar%20Veterinario",
+  whatsappMessage:
+    "Hola, quisiera más información sobre el curso de Auxiliar Veterinario",
+  whatsappMessageEncoded:
+    "Hola,%20quisiera%20más%20información%20sobre%20el%20curso%20de%20Auxiliar%20Veterinario",
 };
 
 export const COURSE_INFO = {
@@ -24,6 +31,84 @@ export const NAV_LINKS = [
   { name: "FAQ", id: "faq" },
 ];
 
+export const HERO_DATA = {
+  title:
+    "Formate como \nAuxiliar Veterinario \ny desarrollá tu salida laboral con animales",
+  subtitle: "Capacitación 100% online con certificación y orientación laboral",
+  image:
+    "https://images.unsplash.com/photo-1599443015574-be5fe8a05783?ixlib=rb-1.2.1&auto=format&fit=crop&w=1400&q=80&fm=webp",
+  features: [
+    "Estudiá desde cualquier lugar",
+    "Clases en vivo grabadas",
+    "Comenzá en cualquier mes del año",
+    "Sin requisitos previos",
+  ],
+  ctaText: "Inscribirme / Pedir información",
+};
+
+export const TARGET_AUDIENCE_DATA = {
+  title: "¿PARA QUIÉN ES ESTA FORMACIÓN?",
+  items: [
+    "Personas sin experiencia previa que desean iniciar su camino en el ámbito veterinario",
+    "Quienes trabajan y necesitan una formación con horarios flexibles",
+    "Personas interesadas en desarrollarse en el cuidado y la salud animal",
+    "Quienes buscan una salida laboral vinculada al sector veterinario",
+  ],
+  note: "No se requieren conocimientos previos",
+};
+
+export const OUTCOME_DATA = {
+  title: "¿Qué vas a poder hacer al finalizar?",
+  items: [
+    "Aplicar conocimientos básicos en entornos clínicos, rurales o de manejo animal",
+    "Incorporar los fundamentos teóricos de los procedimientos habituales del auxiliar",
+    "Comprender el funcionamiento básico de una clínica veterinaria",
+    "Asistir al profesional en tareas generales de consulta",
+    "Manejar correctamente normas básicas de higiene y bioseguridad",
+    "Reconocer signos clínicos frecuentes en pequeños animales",
+    "Colaborar en la organización y asistencia del área de trabajo",
+    "Desempeñarte como auxiliar en distintos ámbitos vinculados a la salud animal",
+  ],
+  summary:
+    "Estarás preparado para dar tus primeros pasos en el ámbito laboral vinculado al cuidado y la salud animal",
+};
+
+export const CAROUSEL_DATA = {
+  title: "AUXILIARES VETERINARIOS EN ACCION",
+  images: [
+    { id: 1, src: auxiliar1, alt: "Auxiliar veterinario trabajando 1" },
+    { id: 2, src: auxiliar2, alt: "Auxiliar veterinario trabajando 2" },
+    { id: 3, src: auxiliar3, alt: "Auxiliar veterinario trabajando 3" },
+    { id: 4, src: auxiliar4, alt: "Auxiliar veterinario trabajando 4" },
+  ],
+};
+
+export const INAVET_INFO_DATA = {
+  title: "¿QUÉ ES INAVET?",
+  description1:
+    "INAVET es un instituto de formación especializado en la capacitación de Auxiliares Veterinarios, con modalidad 100% online y orientación práctica.",
+  description2:
+    "Brindamos una formación estructurada por áreas clave del ámbito veterinario, destinada a quienes buscan desarrollar conocimientos sólidos y aplicables en el ejercicio del rol auxiliar.",
+};
+
+export const ACADEMIC_DIRECTION_DATA = {
+  title: "Dirección y Coordinación Académica",
+  image:
+    "https://images.unsplash.com/photo-1537368910025-700350fe46c7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+  paragraphs: [
+    "La formación está dirigida por el Médico Veterinario Lucas Palacio, con experiencia en clínica de pequeños animales y exóticos, especialista en fauna silvestre y Magíster en Gestión de Fauna Silvestre y Bienestar Animal.",
+    "Su trayectoria profesional en el ámbito clínico y de conservación respalda el enfoque académico y la calidad de la formación.",
+  ],
+};
+
+export const FINAL_CTA_DATA = {
+  title: "¿Querés recibir más información o inscribirte?",
+  subtitle:
+    "Estamos listos para asesorarte y ayudarte a dar el primer paso en tu carrera profesional.",
+  buttonText: "Inscribirme / Pedir información",
+  whatsappNote: "¡Respondemos al instante!",
+};
+
 export const FAQ_DATA = [
   {
     question: "¿Tengo que conectarme en vivo?",
@@ -33,7 +118,6 @@ export const FAQ_DATA = [
     question: "¿Necesito experiencia previa?",
     answer: "No. La formación está pensada desde nivel inicial.",
   },
-
   {
     question: "¿El certificado tiene validez?",
     answer:
@@ -55,7 +139,7 @@ export const MODULES_DATA = [
   {
     title: "Primeros auxilios veterinarios",
     description:
-      "Actuación inicial ante situaciones de urgencia, contención del paciente y asistencia en emergencias frecuentes.",
+      "Actuación inicial ante situaciones de urgencia, conención del paciente y asistencia en emergencias frecuentes.",
   },
   {
     title: "Cirugía y asistencia quirúrgica veterinaria",
@@ -78,6 +162,30 @@ export const MODULES_DATA = [
       "Funcionamiento de clínicas y consultorios, organización del espacio, bioseguridad y dinámica del trabajo profesional.",
   },
 ];
+
+export const PRICING_DATA = {
+  title: "INVERSIÓN",
+  paymentMethodsTitle: "MEDIOS DE PAGO",
+  cuotaLabel: "Valor Cuota Mensual",
+  cuotaCurrency: "ARS / mes",
+  bonusTag: "MATRÍCULA BONIFICADA POR APERTURA (mes de marzo)",
+  features: [
+    "Posibilidad de pago mensual",
+    "Descuento especial por pago completo (10%)"
+  ],
+  methods: [
+    {
+      name: "Mercado Pago",
+      description: "Tarjetas de crédito, débito, cuotas y transferencia.",
+      icon: "CreditCard"
+    },
+    {
+      name: "Transferencia Bancaria",
+      description: "Directo y seguro.",
+      icon: "Banknote"
+    }
+  ]
+};
 
 export const MODALITY_DATA = {
   features: [

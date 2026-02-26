@@ -1,18 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-
-import auxiliar1 from '../assets/auxiliares/auxiliar1.jpg';
-import auxiliar2 from '../assets/auxiliares/auxiliar2.jpg';
-import auxiliar3 from '../assets/auxiliares/auxiliar3.jpg';
-import auxiliar4 from '../assets/auxiliares/auxiliar4.jpg';
-
-const IMAGES_DATA = [
-    { id: 1, src: auxiliar1, alt: "Auxiliar veterinario trabajando 1" },
-    { id: 2, src: auxiliar2, alt: "Auxiliar veterinario trabajando 2" },
-    { id: 3, src: auxiliar3, alt: "Auxiliar veterinario trabajando 3" },
-    { id: 4, src: auxiliar4, alt: "Auxiliar veterinario trabajando 4" },
-];
+import { CAROUSEL_DATA } from '../constants/data';
 
 const AssistantsCarousel = () => {
     const scrollContainerRef = useRef(null);
@@ -60,26 +49,26 @@ const AssistantsCarousel = () => {
 
     const nextImage = (e) => {
         if (e && e.stopPropagation) e.stopPropagation();
-        const currentIndex = IMAGES_DATA.findIndex(img => img.id === selectedId);
-        const nextIndex = (currentIndex + 1) % IMAGES_DATA.length;
-        setSelectedId(IMAGES_DATA[nextIndex].id);
+        const currentIndex = CAROUSEL_DATA.images.findIndex(img => img.id === selectedId);
+        const nextIndex = (currentIndex + 1) % CAROUSEL_DATA.images.length;
+        setSelectedId(CAROUSEL_DATA.images[nextIndex].id);
     };
 
     const prevImage = (e) => {
         if (e && e.stopPropagation) e.stopPropagation();
-        const currentIndex = IMAGES_DATA.findIndex(img => img.id === selectedId);
-        const prevIndex = (currentIndex - 1 + IMAGES_DATA.length) % IMAGES_DATA.length;
-        setSelectedId(IMAGES_DATA[prevIndex].id);
+        const currentIndex = CAROUSEL_DATA.images.findIndex(img => img.id === selectedId);
+        const prevIndex = (currentIndex - 1 + CAROUSEL_DATA.images.length) % CAROUSEL_DATA.images.length;
+        setSelectedId(CAROUSEL_DATA.images[prevIndex].id);
     };
 
-    const selectedImage = IMAGES_DATA.find(img => img.id === selectedId);
+    const selectedImage = CAROUSEL_DATA.images.find(img => img.id === selectedId);
 
     return (
         <section className="py-16 bg-primary relative overflow-hidden">
             <div className="container mx-auto px-4">
                 <div className="bg-white rounded-4xl p-8 md:p-12 shadow-premium relative">
                     <h3 className="text-2xl md:text-5xl font-black text-secondary mb-10 text-center uppercase tracking-tight font-display">
-                        AUXILIARES VETERINARIOS EN ACCION
+                        {CAROUSEL_DATA.title}
                     </h3>
                     
                     <div className="relative group/main">
@@ -99,7 +88,7 @@ const AssistantsCarousel = () => {
                             onTouchMove={onTouchMove}
                             onTouchEnd={() => onTouchEnd(false)}
                         >
-                            {IMAGES_DATA.map((img) => (
+                            {CAROUSEL_DATA.images.map((img) => (
                                 <div key={img.id} className="min-w-full md:min-w-[500px] snap-center px-2 md:px-0">
                                     <div 
                                         className="rounded-3xl overflow-hidden shadow-xl hover:shadow-premium transition-all h-[400px] md:h-[500px] bg-gray-200 relative group/card cursor-pointer"
@@ -179,7 +168,6 @@ const AssistantsCarousel = () => {
         </section>
     );
 };
-
 
 export default AssistantsCarousel;
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
+import { TARGET_AUDIENCE_DATA } from '../constants/data';
 
 const TargetAudience = () => {
     return (
@@ -8,34 +9,32 @@ const TargetAudience = () => {
                 <div className="bg-secondary p-10 md:p-16 rounded-4xl shadow-premium max-w-5xl mx-auto text-white relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 group-hover:scale-125 transition-transform duration-1000"></div>
                     
-                    <h2 className="text-3xl md:text-4xl font-black mb-10 text-center uppercase tracking-tight text-primary">¿PARA QUIÉN ES ESTA FORMACIÓN?</h2>
+                    <h2 className="text-3xl md:text-4xl font-black mb-10 text-center uppercase tracking-tight text-primary">
+                        {TARGET_AUDIENCE_DATA.title}
+                    </h2>
                     
                     <div className="grid md:grid-cols-2 gap-10">
                         <div className="space-y-8">
-                            <div className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                                <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                <span className="text-xl font-bold">Personas sin experiencia previa que desean iniciar su camino en el ámbito veterinario</span>
-                            </div>
-                            <div className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                                <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                <span className="text-xl font-bold">Quienes trabajan y necesitan una formación con horarios flexibles</span>
-                            </div>
+                            {TARGET_AUDIENCE_DATA.items.slice(0, 2).map((item, index) => (
+                                <div key={index} className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                                    <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
+                                    <span className="text-xl font-bold">{item}</span>
+                                </div>
+                            ))}
                         </div>
                         <div className="space-y-8">
-                            <div className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                                <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                <span className="text-xl font-bold">Personas interesadas en desarrollarse en el cuidado y la salud animal</span>
-                            </div>
-                            <div className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                                <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                <span className="text-xl font-bold">Quienes buscan una salida laboral vinculada al sector veterinario</span>
-                            </div>
+                            {TARGET_AUDIENCE_DATA.items.slice(2, 4).map((item, index) => (
+                                <div key={index} className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                                    <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
+                                    <span className="text-xl font-bold">{item}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                     
                     <div className="mt-12 text-center">
                         <span className="bg-primary text-secondary px-8 py-4 rounded-full font-black text-xl uppercase tracking-widest shadow-xl inline-block transform hover:scale-105 transition-transform">
-                            No se requieren conocimientos previos
+                            {TARGET_AUDIENCE_DATA.note}
                         </span>
                     </div>
                 </div>
