@@ -1,7 +1,12 @@
-import auxiliar1 from "../assets/auxiliares/auxiliar1.jpg";
-import auxiliar2 from "../assets/auxiliares/auxiliar2.jpg";
-import auxiliar3 from "../assets/auxiliares/auxiliar3.jpg";
-import auxiliar4 from "../assets/auxiliares/auxiliar4.jpg";
+import heroImage from "../assets/Hero.jpg";
+import carrusel1 from "../assets/auxiliares/Carrete (1).jpg.jpeg";
+import carrusel2 from "../assets/auxiliares/Carrete (2).jpg.jpeg";
+import carrusel3 from "../assets/auxiliares/Carrete (3).jpg.jpeg";
+import carrusel4 from "../assets/auxiliares/Carrete (4).jpg.jpeg";
+import carrusel5 from "../assets/auxiliares/Carrete (5).jpg.jpeg";
+import carrusel6 from "../assets/auxiliares/Carrete (6).jpg.jpeg";
+import carrusel7 from "../assets/auxiliares/Carrete (7).jpg.jpeg";
+import carrusel8 from "../assets/auxiliares/Carrete (8).jpg.jpeg";
 
 export const CONTACT_INFO = {
   whatsapp: "541178292771",
@@ -35,8 +40,7 @@ export const HERO_DATA = {
   title:
     "Formate como \nAuxiliar Veterinario \ny desarrollá tu salida laboral con animales",
   subtitle: "Capacitación 100% online con certificación y orientación laboral",
-  image:
-    "https://images.unsplash.com/photo-1599443015574-be5fe8a05783?ixlib=rb-1.2.1&auto=format&fit=crop&w=1400&q=80&fm=webp",
+  image: heroImage,
   features: [
     "Estudiá desde cualquier lugar",
     "Clases en vivo grabadas",
@@ -76,10 +80,14 @@ export const OUTCOME_DATA = {
 export const CAROUSEL_DATA = {
   title: "AUXILIARES VETERINARIOS EN ACCION",
   images: [
-    { id: 1, src: auxiliar1, alt: "Auxiliar veterinario trabajando 1" },
-    { id: 2, src: auxiliar2, alt: "Auxiliar veterinario trabajando 2" },
-    { id: 3, src: auxiliar3, alt: "Auxiliar veterinario trabajando 3" },
-    { id: 4, src: auxiliar4, alt: "Auxiliar veterinario trabajando 4" },
+    { id: 1, src: carrusel5, alt: "Auxiliar veterinario trabajando 5" },
+    { id: 2, src: carrusel7, alt: "Auxiliar veterinario trabajando 7" },
+    { id: 3, src: carrusel4, alt: "Auxiliar veterinario trabajando 4" },
+    { id: 4, src: carrusel8, alt: "Auxiliar veterinario trabajando 8" },
+    { id: 5, src: carrusel1, alt: "Auxiliar veterinario trabajando 1" },
+    { id: 6, src: carrusel2, alt: "Auxiliar veterinario trabajando 2" },
+    { id: 7, src: carrusel3, alt: "Auxiliar veterinario trabajando 3" },
+    { id: 8, src: carrusel6, alt: "Auxiliar veterinario trabajando 6" },
   ],
 };
 
