@@ -33,9 +33,9 @@ const AcademicDirection = () => {
                 <h3 className="text-2xl md:text-3xl font-black text-secondary mt-16 mb-8 text-center uppercase tracking-tight font-display">
                     {DIRECTION_GALLERY_DATA.title}
                 </h3>
-                <div className="flex justify-center gap-3 md:gap-4 flex-wrap max-w-5xl mx-auto">
+                <div className="flex justify-center gap-3 md:gap-4 flex-wrap max-w-7xl mx-auto px-4">
                     {DIRECTION_GALLERY_DATA.images.map((img) => (
-                        <div key={img.id} className="w-44 h-44 md:w-56 md:h-56 rounded-2xl overflow-hidden shadow-lg">
+                        <div key={img.id} className="w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-2xl overflow-hidden shadow-lg shrink-0">
                             <img 
                                 src={img.src} 
                                 alt={img.alt} 
