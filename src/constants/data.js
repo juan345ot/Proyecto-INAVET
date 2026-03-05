@@ -163,7 +163,7 @@ export const MODULES_DATA = [
   {
     title: "Primeros auxilios veterinarios",
     description:
-      "Actuación inicial ante situaciones de urgencia, contención del paciente y asistencia en emergencias frecuentes, maniobra de RCP.",
+      "Actuación inicial del auxiliar veterinario en situaciones de urgencias y emergencias frecuentes, maniobra de RCP.",
   },
   {
     title: "Cirugía y asistencia quirúrgica veterinaria",
@@ -183,7 +183,7 @@ export const MODULES_DATA = [
   {
     title: "Instalaciones y organización profesional",
     description:
-      "Funcionamiento de clínicas y consultorios, planillas, certificados y documentación de interés profesional, organización del espacio, bioseguridad y dinámica del trabajo del auxiliar veterinario.",
+      "Funcionamiento de clínicas y consultorios, Planillas, certificados y documentación de interés profesional, organización del espacio, bioseguridad y dinámica del trabajo del auxiliar veterinario.",
   },
 ];
 
