@@ -1,5 +1,5 @@
 import React from 'react';
-import { ACADEMIC_DIRECTION_DATA } from '../constants/data';
+import { ACADEMIC_DIRECTION_DATA, DIRECTION_GALLERY_DATA } from '../constants/data';
 
 const AcademicDirection = () => {
     return (
@@ -15,6 +15,7 @@ const AcademicDirection = () => {
                             src={ACADEMIC_DIRECTION_DATA.image} 
                             alt="Dirección Académica" 
                             className="absolute inset-0 w-full h-full object-cover"
+                            style={{ objectPosition: '50% 20%' }}
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent md:bg-linear-to-r"></div>
                     </div>
@@ -26,6 +27,22 @@ const AcademicDirection = () => {
                             ))}
                         </div>
                     </div>
+                </div>
+
+                {/* Dirección en Acción */}
+                <h3 className="text-2xl md:text-3xl font-black text-secondary mt-16 mb-8 text-center uppercase tracking-tight font-display">
+                    {DIRECTION_GALLERY_DATA.title}
+                </h3>
+                <div className="flex justify-center gap-3 md:gap-4 flex-wrap max-w-5xl mx-auto">
+                    {DIRECTION_GALLERY_DATA.images.map((img) => (
+                        <div key={img.id} className="w-44 h-44 md:w-56 md:h-56 rounded-2xl overflow-hidden shadow-lg">
+                            <img 
+                                src={img.src} 
+                                alt={img.alt} 
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                    ))}
                 </div>
             </div>
         </section>

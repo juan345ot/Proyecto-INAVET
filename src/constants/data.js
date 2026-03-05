@@ -7,13 +7,19 @@ import carrusel5 from "../assets/auxiliares/Carrete (5).jpg.jpeg";
 import carrusel6 from "../assets/auxiliares/Carrete (6).jpg.jpeg";
 import carrusel7 from "../assets/auxiliares/Carrete (7).jpg.jpeg";
 import carrusel8 from "../assets/auxiliares/Carrete (8).jpg.jpeg";
+import luloperfil from "../assets/luloperfil.jpg.jpeg";
+import lulo2 from "../assets/direccion/lulo2.jpg.jpeg";
+import lulo3 from "../assets/direccion/lulo3.jpg.jpeg"; 
+import lulo4 from "../assets/direccion/lulo4.jpg.jpeg";
+import lulo5 from "../assets/direccion/lulo5.jpg.jpeg";
+import lulo6 from "../assets/direccion/lulo6.jpg.jpeg";
 
 export const CONTACT_INFO = {
   whatsapp: "541178292771",
   whatsappDisplay: "+54 11 7829-2771",
   instagram: "institutoinavet",
   instagramUrl: "https://instagram.com/institutoinavet",
-  email: "contacto@inavet.com", // Placeholder if needed in future
+  email: "contacto@inavet.com", 
   whatsappMessage:
     "Hola, quisiera más información sobre el curso de Auxiliar Veterinario",
   whatsappMessageEncoded:
@@ -101,11 +107,21 @@ export const INAVET_INFO_DATA = {
 
 export const ACADEMIC_DIRECTION_DATA = {
   title: "Dirección y Coordinación Académica",
-  image:
-    "https://images.unsplash.com/photo-1537368910025-700350fe46c7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+  image: luloperfil,
   paragraphs: [
     "La formación está dirigida por el Médico Veterinario Lucas Palacio, con experiencia en clínica de pequeños animales y exóticos, especialista en fauna silvestre y Magíster en Gestión de Fauna Silvestre y Bienestar Animal.",
     "Su trayectoria profesional en el ámbito clínico y de conservación respalda el enfoque académico y la calidad de la formación.",
+  ],
+};
+
+export const DIRECTION_GALLERY_DATA = {
+  title: "DIRECCIÓN EN ACCIÓN",
+  images: [
+    { id: 1, src: lulo5, alt: "Dirección en acción 1" },
+    { id: 2, src: lulo4, alt: "Dirección en acción 2" },
+    { id: 3, src: lulo6, alt: "Dirección en acción 3" },
+    { id: 4, src: lulo3, alt: "Dirección en acción 4" },
+    { id: 5, src: lulo2, alt: "Dirección en acción 5" },
   ],
 };
 
