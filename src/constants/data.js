@@ -183,7 +183,7 @@ export const MODULES_DATA = [
   {
     title: "Instalaciones y organización profesional",
     description:
-      "Funcionamiento de clínicas y consultorios, Planillas, certificados y documentación de interés profesional, organización del espacio, bioseguridad y dinámica del trabajo del auxiliar veterinario.",
+      "Funcionamiento de clínicas y consultorios, planillas, certificados y documentación de interés profesional, organización del espacio, bioseguridad y dinámica del trabajo del auxiliar veterinario.",
   },
 ];
 
@@ -192,7 +192,7 @@ export const PRICING_DATA = {
   paymentMethodsTitle: "MEDIOS DE PAGO",
   cuotaLabel: "Valor Cuota Mensual",
   cuotaCurrency: "ARS / mes",
-  bonusTag: "MATRÍCULA BONIFICADA POR APERTURA (mes de marzo)",
+  bonusTag: "MATRÍCULA BONIFICADA POR APERTURA",
   features: [
     "Posibilidad de pago mensual",
     "Descuento especial por pago completo (10%)"
