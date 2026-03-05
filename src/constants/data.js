@@ -84,7 +84,7 @@ export const OUTCOME_DATA = {
 };
 
 export const CAROUSEL_DATA = {
-  title: "AUXILIARES VETERINARIOS EN ACCION",
+  title: "AUXILIARES VETERINARIOS EN ACCIÓN",
   images: [
     { id: 1, src: carrusel5, alt: "Auxiliar veterinario trabajando 5" },
     { id: 2, src: carrusel7, alt: "Auxiliar veterinario trabajando 7" },
@@ -145,7 +145,7 @@ export const FAQ_DATA = [
   {
     question: "¿El certificado tiene validez?",
     answer:
-      "Sí. El curso otorga un certificado de capacitación laboral emitido por la Cámara Argentina de Comercio y Capacitación Laboral.Tiene validez como formación complementaria y antecedente curricular en el ámbito privado.La emisión del certificado es opcional y requiere el pago del arancel correspondiente a la entidad certificadora. Además, todos los alumnos que finalicen el curso recibirán un certificado institucional firmado por el Director y Médico Veterinario a cargo, que acredita la realización y aprobación de la capacitación.",
+      "Sí. El curso otorga un certificado de capacitación laboral emitido por la Cámara Argentina de Comercio y Capacitación Laboral. Tiene validez como formación complementaria y antecedente curricular en el ámbito privado. La emisión del certificado es opcional y requiere el pago del arancel correspondiente a la entidad certificadora. Además, todos los alumnos que finalicen el curso recibirán un certificado institucional firmado por el Director y Médico Veterinario a cargo, que acredita la realización y aprobación de la capacitación.",
   },
 ];
 
@@ -158,17 +158,17 @@ export const MODULES_DATA = [
   {
     title: "Procedimientos básicos e instrumental veterinario",
     description:
-      "Conocimiento y uso del instrumental básico, sujecion del paciente, materiales y maniobras esenciales en la práctica del auxiliar veterinario.",
+      "Conocimiento y uso del instrumental básico, sujeción del paciente, materiales y maniobras esenciales en la práctica del auxiliar veterinario.",
   },
   {
     title: "Primeros auxilios veterinarios",
     description:
-      "Actuación inicial ante situaciones de urgencia, conención del paciente y asistencia en emergencias frecuentes, maniobra de RCP.",
+      "Actuación inicial ante situaciones de urgencia, contención del paciente y asistencia en emergencias frecuentes, maniobra de RCP.",
   },
   {
     title: "Cirugía y asistencia quirúrgica veterinaria",
     description:
-      "Principios básicos del ámbito quirúrgico, integrantes del equipo quiŕurgico y sus roles, preparación del paciente, esterilización y apoyo al profesional durante procedimientos.",
+      "Principios básicos del ámbito quirúrgico, integrantes del equipo quirúrgico y sus roles, preparación del paciente, esterilización y apoyo al profesional durante procedimientos.",
   },
   {
     title: "Farmacología veterinaria",
@@ -178,12 +178,12 @@ export const MODULES_DATA = [
   {
     title: "Enfermedades infecciosas veterinarias",
     description:
-      "Conceptos fundamentales sobre virus, bacterias, parásitos y hongos. prevención y medidas básicas de control sanitario.",
+      "Conceptos fundamentales sobre virus, bacterias, parásitos y hongos. Prevención y medidas básicas de control sanitario.",
   },
   {
     title: "Instalaciones y organización profesional",
     description:
-      "Funcionamiento de clínicas y consultorios, planillas, certificados y documentacion de interes profecional , organización del espacio, bioseguridad y dinámica del trabajo del auxiliar veterinario.",
+      "Funcionamiento de clínicas y consultorios, planillas, certificados y documentación de interés profesional, organización del espacio, bioseguridad y dinámica del trabajo del auxiliar veterinario.",
   },
 ];
 
