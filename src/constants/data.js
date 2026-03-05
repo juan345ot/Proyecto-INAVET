@@ -75,7 +75,7 @@ export const OUTCOME_DATA = {
     "Comprender el funcionamiento básico de una clínica veterinaria",
     "Asistir al profesional en tareas generales de consulta",
     "Manejar correctamente normas básicas de higiene y bioseguridad",
-    "Reconocer signos clínicos frecuentes en pequeños animales",
+    "Reconocer signos clínicos frecuentes en animales",
     "Colaborar en la organización y asistencia del área de trabajo",
     "Desempeñarte como auxiliar en distintos ámbitos vinculados a la salud animal",
   ],
@@ -158,17 +158,17 @@ export const MODULES_DATA = [
   {
     title: "Procedimientos básicos e instrumental veterinario",
     description:
-      "Conocimiento y uso del instrumental básico, materiales y maniobras esenciales en la práctica auxiliar clínica.",
+      "Conocimiento y uso del instrumental básico, sujecion del paciente, materiales y maniobras esenciales en la práctica del auxiliar veterinario.",
   },
   {
     title: "Primeros auxilios veterinarios",
     description:
-      "Actuación inicial ante situaciones de urgencia, conención del paciente y asistencia en emergencias frecuentes.",
+      "Actuación inicial ante situaciones de urgencia, conención del paciente y asistencia en emergencias frecuentes, maniobra de RCP.",
   },
   {
     title: "Cirugía y asistencia quirúrgica veterinaria",
     description:
-      "Principios básicos del ámbito quirúrgico, preparación del paciente, esterilización y apoyo al profesional durante procedimientos.",
+      "Principios básicos del ámbito quirúrgico, integrantes del equipo quiŕurgico y sus roles, preparación del paciente, esterilización y apoyo al profesional durante procedimientos.",
   },
   {
     title: "Farmacología veterinaria",
@@ -178,12 +178,12 @@ export const MODULES_DATA = [
   {
     title: "Enfermedades infecciosas veterinarias",
     description:
-      "Conceptos fundamentales sobre virus, bacterias y parásitos, prevención y medidas básicas de control sanitario.",
+      "Conceptos fundamentales sobre virus, bacterias, parásitos y hongos. prevención y medidas básicas de control sanitario.",
   },
   {
     title: "Instalaciones y organización profesional",
     description:
-      "Funcionamiento de clínicas y consultorios, organización del espacio, bioseguridad y dinámica del trabajo profesional.",
+      "Funcionamiento de clínicas y consultorios, planillas, certificados y documentacion de interes profecional , organización del espacio, bioseguridad y dinámica del trabajo del auxiliar veterinario.",
   },
 ];
 
