@@ -3,12 +3,12 @@ import { HERO_DATA } from '../constants/data';
 
 const Hero = () => {
     return (
-        <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 md:pt-28 pb-12">
+        <section id="inicio" className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-24 md:pt-28 pb-12">
             <div className="absolute inset-0 z-0">
                 <img 
                     src={HERO_DATA.image} 
                     alt="Veterinary Assistant" 
-                    className="w-full h-full object-cover scale-105 animate-slow-zoom"
+                    className="w-full h-full object-cover object-[center_30%] md:object-center scale-105 animate-slow-zoom"
                 />
                 <div className="absolute inset-0 bg-linear-to-b from-secondary/60 to-black/80"></div>
             </div>
