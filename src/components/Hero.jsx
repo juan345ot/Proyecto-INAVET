@@ -3,14 +3,14 @@ import { HERO_DATA } from '../constants/data';
 
 const Hero = () => {
     return (
-        <section id="inicio" className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-24 md:pt-28 pb-12">
-            <div className="absolute inset-0 z-0">
+        <section id="inicio" className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-24 md:pt-28 pb-12">
+            <div className="absolute inset-0 z-0 bg-secondary">
                 <img 
                     src={HERO_DATA.image} 
                     alt="Veterinary Assistant" 
-                    className="w-full h-full object-cover object-[center_30%] md:object-center scale-105 animate-slow-zoom"
+                    className="w-full h-full object-cover object-[80%_center] md:object-center md:scale-105 md:animate-slow-zoom"
                 />
-                <div className="absolute inset-0 bg-linear-to-b from-secondary/60 to-black/80"></div>
+                <div className="absolute inset-0 bg-linear-to-b from-secondary/70 via-secondary/20 to-black/90"></div>
             </div>
 
             <div className="container mx-auto px-4 z-10 text-center text-white">
@@ -47,7 +47,7 @@ const Hero = () => {
                 </div>
             </div>
             
-            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce opacity-50">
+            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce opacity-50 hidden md:block">
                 <div className="w-1 h-12 bg-linear-to-b from-primary to-transparent rounded-full"></div>
             </div>
         </section>
