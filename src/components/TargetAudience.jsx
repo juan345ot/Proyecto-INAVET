@@ -13,27 +13,27 @@ const TargetAudience = () => {
                         {TARGET_AUDIENCE_DATA.title}
                     </h2>
                     
-                    <div className="grid md:grid-cols-2 gap-10">
-                        <div className="space-y-8">
+                    <div className="grid md:grid-cols-2 gap-6 md:gap-10">
+                        <div className="space-y-6 md:space-y-8">
                             {TARGET_AUDIENCE_DATA.items.slice(0, 2).map((item, index) => (
-                                <div key={index} className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                                    <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                    <span className="text-xl font-bold">{item}</span>
+                                <div key={index} className="flex items-start bg-white/5 p-5 md:p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors h-full">
+                                    <CheckCircle className="text-primary mt-1 mr-4 md:mr-5 shrink-0" size={28} />
+                                    <span className="text-lg md:text-xl font-bold leading-tight">{item}</span>
                                 </div>
                             ))}
                         </div>
-                        <div className="space-y-8">
+                        <div className="space-y-6 md:space-y-8">
                             {TARGET_AUDIENCE_DATA.items.slice(2, 4).map((item, index) => (
-                                <div key={index} className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                                    <CheckCircle className="text-primary mt-1 mr-5 shrink-0" size={32} />
-                                    <span className="text-xl font-bold">{item}</span>
+                                <div key={index} className="flex items-start bg-white/5 p-5 md:p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors h-full">
+                                    <CheckCircle className="text-primary mt-1 mr-4 md:mr-5 shrink-0" size={28} />
+                                    <span className="text-lg md:text-xl font-bold leading-tight">{item}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
                     
-                    <div className="mt-12 text-center">
-                        <span className="bg-primary text-secondary px-8 py-4 rounded-full font-black text-xl uppercase tracking-widest shadow-xl inline-block transform hover:scale-105 transition-transform">
+                    <div className="mt-12 flex justify-center w-full px-2">
+                        <span className="bg-primary text-secondary px-6 md:px-8 py-3 md:py-4 rounded-full font-black text-lg md:text-xl uppercase tracking-tighter md:tracking-widest shadow-xl text-center transform hover:scale-105 transition-transform max-w-full">
                             {TARGET_AUDIENCE_DATA.note}
                         </span>
                     </div>
