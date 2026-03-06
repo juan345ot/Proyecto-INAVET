@@ -18,7 +18,7 @@ const Footer = lazy(() => import('./components/Footer'));
 
 function App() {
   return (
-    <div className="font-sans antialiased text-gray-900 bg-primary">
+    <div className="font-sans antialiased text-gray-900 bg-primary overflow-x-hidden">
       <Navbar />
       <Hero />
       

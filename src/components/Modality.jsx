@@ -81,7 +81,7 @@ const Modality = () => {
                 <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                     <div className="bg-secondary text-white p-10 rounded-4xl shadow-premium relative overflow-hidden group">
                         <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-x-1/2 translate-y-1/2 group-hover:scale-150 transition-transform duration-700"></div>
-                        <h2 className="text-3xl font-black mb-10 uppercase tracking-widest text-primary font-display text-center">DURACIÓN</h2>
+                        <h2 className="text-2xl xs:text-3xl font-black mb-10 uppercase tracking-tight xs:tracking-widest text-primary font-display text-center">DURACIÓN</h2>
                         <div className="space-y-6 relative z-10">
                             <div className="flex items-center gap-4">
                                 <div className="bg-white/10 p-3 rounded-2xl">
@@ -100,7 +100,7 @@ const Modality = () => {
 
                     <div className="bg-secondary text-white p-10 rounded-4xl shadow-premium relative overflow-hidden group">
                         <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-x-1/2 translate-y-1/2 group-hover:scale-150 transition-transform duration-700"></div>
-                        <h2 className="text-3xl font-black mb-10 uppercase tracking-widest text-primary font-display text-center">CERTIFICACIÓN</h2>
+                        <h2 className="text-2xl xs:text-3xl font-black mb-10 uppercase tracking-tight xs:tracking-widest text-primary font-display text-center">CERTIFICACIÓN</h2>
                         <div className="space-y-6 relative z-10">
                             <div className="flex items-center gap-4">
                                 <div className="bg-white/10 p-3 rounded-2xl shrink-0">

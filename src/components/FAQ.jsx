@@ -8,12 +8,12 @@ const FAQItem = ({ question, answer, id }) => {
     return (
         <div className="border border-gray-100 rounded-2xl overflow-hidden bg-white shadow-soft-depth hover:shadow-premium transition-all duration-300 mb-4">
             <button 
-                className="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-50/50 transition-colors focus:outline-none group"
+                className="w-full px-5 xs:px-8 py-5 xs:py-6 text-left flex justify-between items-center hover:bg-gray-50/50 transition-colors focus:outline-none group"
                 onClick={() => setIsOpen(!isOpen)}
                 aria-expanded={isOpen}
                 aria-controls={`faq-answer-${id}`}
             >
-                <span className={`text-lg font-black transition-colors ${isOpen ? 'text-secondary font-display' : 'text-gray-800 font-display'}`}>
+                <span className={`text-base xs:text-lg font-black transition-colors ${isOpen ? 'text-secondary font-display' : 'text-gray-800 font-display'}`}>
                     {question}
                 </span>
                 <div className={`p-2 rounded-full transition-all ${isOpen ? 'bg-secondary text-white rotate-180' : 'bg-primary/10 text-primary'}`}>
@@ -24,9 +24,9 @@ const FAQItem = ({ question, answer, id }) => {
                 id={`faq-answer-${id}`}
                 role="region"
                 aria-labelledby={`faq-question-${id}`}
-                className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+                className={`overflow-hidden transition-all duration-700 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}
             >
-                <div className="px-8 pb-8 pt-2 text-gray-600 text-lg font-medium leading-relaxed border-t border-gray-50 mt-2">
+                <div className="px-5 xs:px-8 pb-6 xs:pb-8 pt-2 text-gray-600 text-base md:text-lg font-medium leading-relaxed border-t border-gray-50 mt-2">
                     {answer}
                 </div>
             </div>

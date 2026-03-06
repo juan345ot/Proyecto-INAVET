@@ -3,14 +3,14 @@ import { HERO_DATA } from '../constants/data';
 
 const Hero = () => {
     return (
-        <section id="inicio" className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-24 md:pt-28 pb-12">
+        <section id="inicio" className="relative min-h-[70vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-20 md:pt-28 pb-10">
             <div className="absolute inset-0 z-0 bg-secondary">
                 <img 
                     src={HERO_DATA.image} 
                     alt="Veterinary Assistant" 
                     className="w-full h-full object-cover object-[80%_center] md:object-center md:scale-105 md:animate-slow-zoom"
                 />
-                <div className="absolute inset-0 bg-linear-to-b from-secondary/70 via-secondary/20 to-black/90"></div>
+                <div className="absolute inset-0 bg-linear-to-b from-secondary/50 via-secondary/30 to-black/90"></div>
             </div>
 
             <div className="container mx-auto px-4 z-10 text-center text-white">
