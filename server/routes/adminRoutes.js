@@ -196,6 +196,39 @@ router.delete('/students/:id', async (req, res) => {
   }
 });
 
+// Endpoint consolidado del plan de estudios (módulos con sus clases, materiales y examen)
+router.get('/curriculum-tree', async (req, res) => {
+  try {
+    const modules = await Module.find().sort({ order: 1 });
+    const lessons = await Lesson.find().sort({ order: 1 });
+    const materials = await Material.find().sort({ order: 1 });
+    const exams = await Exam.find().sort({ title: 1 });
+
+    const tree = modules.map((m) => {
+      const moduleLessons = lessons
+        .filter((l) => l.moduleId.toString() === m._id.toString())
+        .map((l) => {
+          const lessonMaterials = materials.filter((mat) => mat.lessonId.toString() === l._id.toString());
+          const lessonExam = exams.find((ex) => ex.lessonId && ex.lessonId.toString() === l._id.toString());
+          return {
+            ...l.toObject(),
+            materials: lessonMaterials,
+            exam: lessonExam || null,
+          };
+        });
+
+      return {
+        ...m.toObject(),
+        lessons: moduleLessons,
+      };
+    });
+
+    res.json({ success: true, data: tree });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // ----------------- GESTIÓN DE MÓDULOS -----------------
 router.get('/modules', async (req, res) => {
   try {
@@ -232,8 +265,8 @@ router.put('/modules/:id', async (req, res) => {
 
 router.delete('/modules/:id', async (req, res) => {
   try {
-    await Module.findByIdAndUpdate(req.params.id, { status: 'INACTIVE' });
-    res.json({ success: true, message: 'Módulo desactivado correctamente' });
+    await Module.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Módulo eliminado correctamente' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -275,6 +308,17 @@ router.put('/lessons/:id', async (req, res) => {
   }
 });
 
+router.delete('/lessons/:id', async (req, res) => {
+  try {
+    await Lesson.findByIdAndDelete(req.params.id);
+    // Eliminar también materiales vinculados
+    await Material.deleteMany({ lessonId: req.params.id });
+    res.json({ success: true, message: 'Clase eliminada correctamente' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // ----------------- GESTIÓN DE MATERIALES -----------------
 router.get('/lessons/:lessonId/materials', async (req, res) => {
   try {
@@ -291,12 +335,21 @@ router.post('/materials', async (req, res) => {
     const material = await Material.create({
       lessonId,
       title,
-      type,
-      url,
-      content,
+      type: type || 'PDF',
+      url: url || '',
+      content: content || '',
       order: order || 1,
     });
     res.status(201).json({ success: true, data: material });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.put('/materials/:id', async (req, res) => {
+  try {
+    const material = await Material.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ success: true, data: material });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -325,12 +378,42 @@ router.post('/exams', async (req, res) => {
   try {
     const { lessonId, title, description, passingScorePercent } = req.body;
     const exam = await Exam.create({
-      lessonId,
+      lessonId: lessonId || null,
       title,
       description,
       passingScorePercent: passingScorePercent || 70,
     });
     res.status(201).json({ success: true, data: exam });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.put('/exams/:id', async (req, res) => {
+  try {
+    const { lessonId, title, description, passingScorePercent, status } = req.body;
+    const exam = await Exam.findByIdAndUpdate(
+      req.params.id,
+      {
+        lessonId: lessonId === '' ? null : lessonId,
+        title,
+        description,
+        passingScorePercent,
+        status,
+      },
+      { new: true }
+    );
+    res.json({ success: true, data: exam });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.delete('/exams/:id', async (req, res) => {
+  try {
+    await Exam.findByIdAndDelete(req.params.id);
+    await Question.deleteMany({ examId: req.params.id });
+    res.json({ success: true, message: 'Examen y sus preguntas eliminados' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -351,8 +434,8 @@ router.post('/questions', async (req, res) => {
     const question = await Question.create({
       examId,
       prompt,
-      options,
-      correctOptionIndex,
+      options: options || [],
+      correctOptionIndex: correctOptionIndex !== undefined ? correctOptionIndex : 0,
       order: order || 1,
     });
     res.status(201).json({ success: true, data: question });

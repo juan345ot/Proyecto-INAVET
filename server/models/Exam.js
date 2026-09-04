@@ -5,8 +5,7 @@ const examSchema = new mongoose.Schema(
     lessonId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Lesson',
-      required: [true, 'La clase asociada es obligatoria'],
-      unique: true, // Cada clase tiene exactamente su propio examen
+      default: null,
     },
     title: {
       type: String,
