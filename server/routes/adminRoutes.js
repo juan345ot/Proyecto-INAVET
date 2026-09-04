@@ -1,5 +1,8 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import multer from 'multer';
+import mongoose from 'mongoose';
+import { GridFSBucket } from 'mongodb';
 import { protect, requireRole } from '../middleware/authMiddleware.js';
 import User from '../models/User.js';
 import Module from '../models/Module.js';
@@ -15,6 +18,14 @@ const router = express.Router();
 // Aplica protección de admin estricta
 router.use(protect);
 router.use(requireRole('ADMIN'));
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB
+});
+
+const allowedExtensions = new Set(['pdf', 'ppt', 'pptx', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp', 'gif']);
+const fileExtension = (name = '') => name.split('.').pop().toLowerCase();
 
 // ----------------- DASHBOARD ADMIN -----------------
 router.get('/stats', async (req, res) => {
@@ -325,6 +336,63 @@ router.get('/lessons/:lessonId/materials', async (req, res) => {
     const materials = await Material.find({ lessonId: req.params.lessonId }).sort({ order: 1 });
     res.json({ success: true, data: materials });
   } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Carga de archivo desde el formulario "Agregar Material a la Clase".
+// Los archivos se almacenan en GridFS de MongoDB Atlas, no en el disco efímero de Render.
+router.post('/materials/upload', upload.single('file'), async (req, res) => {
+  try {
+    const { lessonId, title, type, content, order } = req.body;
+
+    if (!req.file || !lessonId || !title || !type) {
+      return res.status(400).json({ success: false, message: 'Completá la clase, el título, el tipo y seleccioná un archivo.' });
+    }
+
+    const extension = fileExtension(req.file.originalname);
+    if (!allowedExtensions.has(extension)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Formato no permitido. Podés subir PDF, PowerPoint, Word o imágenes.',
+      });
+    }
+
+    if (!mongoose.connection.db) {
+      return res.status(503).json({ success: false, message: 'La base de datos no está disponible. Intentá nuevamente.' });
+    }
+
+    const fileId = new mongoose.Types.ObjectId();
+    const bucket = new GridFSBucket(mongoose.connection.db, { bucketName: 'materials' });
+    const uploadStream = bucket.openUploadStream(req.file.originalname, {
+      id: fileId,
+      contentType: req.file.mimetype || 'application/octet-stream',
+      metadata: { uploadedBy: req.user._id.toString(), lessonId: lessonId.toString() },
+    });
+
+    await new Promise((resolve, reject) => {
+      uploadStream.on('error', reject);
+      uploadStream.on('finish', resolve);
+      uploadStream.end(req.file.buffer);
+    });
+
+    const material = await Material.create({
+      lessonId,
+      title: title.trim(),
+      type,
+      content: content || '',
+      order: Number(order) || 1,
+      fileId,
+      fileName: req.file.originalname,
+      mimeType: req.file.mimetype || 'application/octet-stream',
+      fileSize: req.file.size,
+    });
+
+    res.status(201).json({ success: true, message: 'Archivo cargado correctamente.', data: material });
+  } catch (error) {
+    if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ success: false, message: 'El archivo supera el límite de 20 MB.' });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 });
