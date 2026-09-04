@@ -130,7 +130,7 @@ const Navbar = () => {
             </div>
 
             <div className={`md:hidden absolute top-full left-0 w-full transition-all duration-500 ease-in-out overflow-hidden ${
-                isOpen ? 'max-h-125 opacity-100' : 'max-h-0 opacity-0'
+                isOpen ? 'max-h-[32rem] opacity-100' : 'max-h-0 opacity-0'
             }`}>
                 <div className="bg-white/95 backdrop-blur-md shadow-2xl border-t border-gray-100 py-8 px-6 flex flex-col gap-3">
                     {navLinks.map((link, index) => (
@@ -152,7 +152,9 @@ const Navbar = () => {
                     ))}
                     <Link
                         to="/login"
+                        onClick={() => setIsOpen(false)}
                         className="w-full py-4 px-6 bg-primary text-slate-950 font-black text-lg transition-all flex items-center justify-between rounded-2xl shadow-md group active:scale-[0.98]"
+                        aria-label="Ingresar al Aula Virtual"
                     >
                         <span>INGRESAR AL AULA</span>
                         <ChevronRight size={18} />
