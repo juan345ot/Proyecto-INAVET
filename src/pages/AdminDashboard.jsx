@@ -123,7 +123,7 @@ const AdminDashboard = () => {
       const url = modalData ? `/api/admin/modules/${modalData._id}` : '/api/admin/modules';
       const method = modalData ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(moduleForm),
@@ -143,7 +143,7 @@ const AdminDashboard = () => {
   const handleDeleteModule = async (id, title) => {
     if (!window.confirm(`¿Seguro que querés eliminar el módulo "${title}"?`)) return;
     try {
-      const res = await fetch(`/api/admin/modules/${id}`, {
+      const res = await apiFetch(`/api/admin/modules/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -192,7 +192,7 @@ const AdminDashboard = () => {
       const url = modalData ? `/api/admin/lessons/${modalData._id}` : '/api/admin/lessons';
       const method = modalData ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(lessonForm),
@@ -204,7 +204,7 @@ const AdminDashboard = () => {
 
         // Si se seleccionó un examen para asociar a esta clase
         if (lessonForm.examId) {
-          await fetch(`/api/admin/exams/${lessonForm.examId}`, {
+          await apiFetch(`/api/admin/exams/${lessonForm.examId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ lessonId: savedLessonId }),
@@ -224,7 +224,7 @@ const AdminDashboard = () => {
   const handleDeleteLesson = async (id, title) => {
     if (!window.confirm(`¿Seguro que querés eliminar la clase "${title}" y sus materiales?`)) return;
     try {
-      const res = await fetch(`/api/admin/lessons/${id}`, {
+      const res = await apiFetch(`/api/admin/lessons/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -324,7 +324,7 @@ const AdminDashboard = () => {
   const handleDeleteMaterial = async (id) => {
     if (!window.confirm('¿Seguro que querés eliminar este material?')) return;
     try {
-      const res = await fetch(`/api/admin/materials/${id}`, {
+      const res = await apiFetch(`/api/admin/materials/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -363,7 +363,7 @@ const AdminDashboard = () => {
       const url = modalData ? `/api/admin/exams/${modalData._id}` : '/api/admin/exams';
       const method = modalData ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(examForm),
@@ -383,7 +383,7 @@ const AdminDashboard = () => {
   const handleDeleteExam = async (id, title) => {
     if (!window.confirm(`¿Seguro que querés eliminar el examen "${title}" y todas sus preguntas?`)) return;
     try {
-      const res = await fetch(`/api/admin/exams/${id}`, {
+      const res = await apiFetch(`/api/admin/exams/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -397,7 +397,7 @@ const AdminDashboard = () => {
   const openQuestionsManager = async (exam) => {
     setSelectedExamForQuestions(exam);
     try {
-      const res = await fetch(`/api/admin/exams/${exam._id}/questions`, {
+      const res = await apiFetch(`/api/admin/exams/${exam._id}/questions`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -442,7 +442,7 @@ const AdminDashboard = () => {
           correctOptionIndex: 0,
         });
         // Refrescar preguntas del examen
-        const resQ = await fetch(`/api/admin/exams/${selectedExamForQuestions._id}/questions`, {
+        const resQ = await apiFetch(`/api/admin/exams/${selectedExamForQuestions._id}/questions`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const dataQ = await resQ.json();
@@ -455,11 +455,11 @@ const AdminDashboard = () => {
 
   const handleDeleteQuestion = async (id) => {
     try {
-      await fetch(`/api/admin/questions/${id}`, {
+      await apiFetch(`/api/admin/questions/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-      const resQ = await fetch(`/api/admin/exams/${selectedExamForQuestions._id}/questions`, {
+      const resQ = await apiFetch(`/api/admin/exams/${selectedExamForQuestions._id}/questions`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataQ = await resQ.json();
@@ -496,7 +496,7 @@ const AdminDashboard = () => {
     e.preventDefault();
     if (!modalData || !tempPassword) return;
     try {
-      const res = await fetch(`/api/admin/students/${modalData._id}/reset-password`, {
+      const res = await apiFetch(`/api/admin/students/${modalData._id}/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ tempPassword }),
