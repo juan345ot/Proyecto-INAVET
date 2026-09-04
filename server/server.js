@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
@@ -11,9 +9,6 @@ import adminRoutes from './routes/adminRoutes.js';
 import { seedInitialData } from './seed.js';
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -56,15 +51,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// En producción, servir la build estática de Vite (SPA)
-if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '../dist');
-  app.use(express.static(distPath));
-
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(distPath, 'index.html'));
+// Este servicio se despliega como API independiente.
+// El frontend React se sirve desde el Static Site de Render.
+app.get('/', (req, res) => {
+  res.json({
+    service: 'INAVET Aula Virtual API',
+    health: '/api/health',
   });
-}
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
