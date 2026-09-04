@@ -102,6 +102,18 @@ const Navbar = () => {
                             >
                                 Contacto
                             </button>
+                            <a
+                                href="/login"
+                                className={`font-black text-sm uppercase tracking-widest transition-all transform hover:scale-105 active:scale-95 shadow-lg px-6 py-3 rounded-full flex items-center gap-1.5
+                                    ${scrolled 
+                                        ? 'bg-primary text-slate-950 shadow-primary/20 hover:bg-primary-hover' 
+                                        : 'bg-primary text-slate-950 shadow-primary/30 hover:bg-primary-hover'
+                                    }
+                                `}
+                                aria-label="Ingresar al Aula Virtual"
+                            >
+                                INGRESAR
+                            </a>
                 </div>
 
                 <div className="md:hidden">
@@ -137,6 +149,13 @@ const Navbar = () => {
                             </div>
                         </button>
                     ))}
+                    <a
+                        href="/login"
+                        className="w-full py-4 px-6 bg-primary text-slate-950 font-black text-lg transition-all flex items-center justify-between rounded-2xl shadow-md group active:scale-[0.98]"
+                    >
+                        <span>INGRESAR AL AULA</span>
+                        <ChevronRight size={18} />
+                    </a>
                 </div>
             </div>
         </nav>

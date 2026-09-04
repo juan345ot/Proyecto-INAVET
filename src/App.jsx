@@ -1,78 +1,47 @@
-import React, { Suspense, lazy } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import InavetInfo from './components/InavetInfo';
-import AssistantsCarousel from './components/AssistantsCarousel';
-import Modality from './components/Modality';
-import TargetAudience from './components/TargetAudience';
-import ScrollReveal from './components/ScrollReveal';
-import WhatsAppButton from './components/WhatsAppButton';
-import Outcome from './components/Outcome';
-import AcademicDirection from './components/AcademicDirection';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
-const Pricing = lazy(() => import('./components/Pricing'));
-const EnrollCTA = lazy(() => import('./components/EnrollCTA'));
-const FAQ = lazy(() => import('./components/FAQ'));
-const FinalCTA = lazy(() => import('./components/FinalCTA'));
-const Footer = lazy(() => import('./components/Footer'));
+// Páginas
+import LandingPage from './pages/LandingPage';
+import Login from './pages/Login';
+import ChangePassword from './pages/ChangePassword';
+import StudentHome from './pages/StudentHome';
+import StudentLesson from './pages/StudentLesson';
+import StudentExam from './pages/StudentExam';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
-    <div className="font-sans antialiased text-gray-900 bg-primary overflow-x-hidden">
-      <Navbar />
-      <Hero />
-      
-      <ScrollReveal>
-        <TargetAudience />
-      </ScrollReveal>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Landing Page Pública Original */}
+          <Route path="/" element={<LandingPage />} />
 
-      <ScrollReveal>
-        <Outcome />
-      </ScrollReveal>
+          {/* Autenticación */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/ingresar" element={<Navigate to="/login" replace />} />
+          <Route path="/cambiar-password" element={<ChangePassword />} />
 
-      <ScrollReveal delay={100}>
-        <AssistantsCarousel />
-      </ScrollReveal>
-      
-      <ScrollReveal delay={200}>
-        <Modality />
-      </ScrollReveal>
+          {/* Área de Alumno Protegida */}
+          <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']} />}>
+            <Route path="/aula" element={<StudentHome />} />
+            <Route path="/aula/clase/:id" element={<StudentLesson />} />
+            <Route path="/aula/examen/:examId" element={<StudentExam />} />
+          </Route>
 
-      <ScrollReveal>
-        <InavetInfo />
-      </ScrollReveal>
+          {/* Área Administrativa Protegida */}
+          <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
 
-      <ScrollReveal>
-        <AcademicDirection />
-      </ScrollReveal>
-      
-      <Suspense fallback={
-        <div className="py-24 container mx-auto px-4 space-y-12">
-          <div className="h-12 bg-white/20 rounded-full w-48 animate-pulse mx-auto"></div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-64 bg-white/20 rounded-4xl animate-pulse"></div>
-            ))}
-          </div>
-        </div>
-      }>
-        <ScrollReveal>
-          <Pricing />
-        </ScrollReveal>
-
-        <EnrollCTA />
-        
-        <ScrollReveal>
-          <FAQ />
-        </ScrollReveal>
-        
-        <FinalCTA />
-        
-        <Footer />
-      </Suspense>
-
-      <WhatsAppButton />
-    </div>
+          {/* Redirección por defecto */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
