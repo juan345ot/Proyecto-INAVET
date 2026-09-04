@@ -20,6 +20,8 @@ import {
   Link as LinkIcon,
   Play,
   Settings,
+  UserCheck,
+  UserX,
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { apiFetch } from '../lib/api';
@@ -474,16 +476,30 @@ const AdminDashboard = () => {
   };
 
   const handleToggleStudentStatus = async (student) => {
-    const newStatus = student.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    const isDeactivating = student.status === 'ACTIVE';
+    const newStatus = isDeactivating ? 'INACTIVE' : 'ACTIVE';
+    const action = isDeactivating ? 'dar de baja' : 'reactivar';
+
+    if (!window.confirm(`¿Confirmás que querés ${action} a ${student.firstName} ${student.lastName}?${isDeactivating ? '\n\nEl alumno no podrá iniciar sesión ni acceder a la plataforma hasta que lo reactives.' : ''}`)) {
+      return;
+    }
+
     try {
-      await fetch(`/api/admin/students/${student._id}`, {
+      const res = await apiFetch(`/api/admin/students/${student._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: newStatus }),
       });
-      fetchAllData();
+      const data = await res.json();
+
+      if (data.success) {
+        alert(isDeactivating ? 'Alumno dado de baja correctamente.' : 'Alumno reactivado correctamente.');
+        fetchAllData();
+      } else {
+        alert(data.message || 'No se pudo actualizar el estado del alumno.');
+      }
     } catch (err) {
-      console.error(err);
+      alert('Error de conexión al actualizar el estado del alumno.');
     }
   };
 
@@ -978,18 +994,29 @@ const AdminDashboard = () => {
                           <div>{st.phone || '-'}</div>
                         </td>
                         <td className="p-4">
-                          <button
-                            onClick={() => handleToggleStudentStatus(st)}
-                            className={`px-3 py-1 rounded-full text-xs font-bold cursor-pointer transition-all ${
+                          <span
+                            className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
                               st.status === 'ACTIVE'
                                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-slate-100 text-slate-500'
+                                : 'bg-slate-100 text-slate-500 border border-slate-200'
                             }`}
                           >
                             {st.status === 'ACTIVE' ? 'Activo' : 'Inactivo'}
-                          </button>
+                          </span>
                         </td>
                         <td className="p-4 text-right space-x-2">
+                          <button
+                            onClick={() => handleToggleStudentStatus(st)}
+                            className={`p-2 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 cursor-pointer ${
+                              st.status === 'ACTIVE'
+                                ? 'bg-amber-50 hover:bg-amber-100 text-amber-800'
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'
+                            }`}
+                            title={st.status === 'ACTIVE' ? 'Dar de baja al alumno' : 'Reactivar alumno'}
+                          >
+                            {st.status === 'ACTIVE' ? <UserX size={14} /> : <UserCheck size={14} />}
+                            <span>{st.status === 'ACTIVE' ? 'Dar de baja' : 'Reactivar'}</span>
+                          </button>
                           <button
                             onClick={() => {
                               setModalData(st);
