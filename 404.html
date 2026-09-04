@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>INAVET</title>
+    <script>
+      // Truco para GitHub Pages + React Router:
+      // Guarda la ruta actual en sessionStorage y redirige al index.
+      // El index.html la leerá y React Router navegará a ella.
+      var segmentsToKeep = 1; // 1 = mantiene el segmento base del repo (/Proyecto-INAVET/)
+      var l = window.location;
+      sessionStorage.redirect = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + segmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(segmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash;
+    </script>
+    <meta http-equiv="refresh" content="0;url=/" />
+  </head>
+</html>
