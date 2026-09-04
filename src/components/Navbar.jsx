@@ -48,7 +48,7 @@ const Navbar = () => {
             }`}
         >
             <div 
-                className="absolute bottom-0 left-0 h-[3px] bg-primary transition-all duration-200 z-50"
+                className="absolute bottom-0 left-0 h-0.75 bg-primary transition-all duration-200 z-50"
                 style={{ width: `${scrollProgress}%` }}
             ></div>
 
@@ -130,7 +130,7 @@ const Navbar = () => {
             </div>
 
             <div className={`md:hidden absolute top-full left-0 w-full transition-all duration-500 ease-in-out overflow-hidden ${
-                isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+                isOpen ? 'max-h-125 opacity-100' : 'max-h-0 opacity-0'
             }`}>
                 <div className="bg-white/95 backdrop-blur-md shadow-2xl border-t border-gray-100 py-8 px-6 flex flex-col gap-3">
                     {navLinks.map((link, index) => (
