@@ -23,6 +23,24 @@ const materialSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    fileId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
+    fileName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    mimeType: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    fileSize: {
+      type: Number,
+      default: 0,
+    },
     content: {
       type: String,
       default: '', // Contenido de texto explicativo o apuntes de la clase
