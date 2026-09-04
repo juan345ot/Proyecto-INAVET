@@ -22,6 +22,7 @@ import {
   Settings,
 } from 'lucide-react';
 import logo from '../assets/logo.png';
+import { apiFetch } from '../lib/api';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('modulos'); // 'modulos' | 'examenes' | 'alumnos'
@@ -61,10 +62,10 @@ const AdminDashboard = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [resStats, resStudents, resTree, resExams] = await Promise.all([
-        fetch('/api/admin/stats', { headers }).then((r) => r.json()),
-        fetch('/api/admin/students', { headers }).then((r) => r.json()),
-        fetch('/api/admin/curriculum-tree', { headers }).then((r) => r.json()),
-        fetch('/api/admin/exams', { headers }).then((r) => r.json()),
+        apiFetch('/api/admin/stats', { headers }).then((r) => r.json()),
+        apiFetch('/api/admin/students', { headers }).then((r) => r.json()),
+        apiFetch('/api/admin/curriculum-tree', { headers }).then((r) => r.json()),
+        apiFetch('/api/admin/exams', { headers }).then((r) => r.json()),
       ]);
 
       if (resStats.success) setStats(resStats.data);
@@ -382,7 +383,7 @@ const AdminDashboard = () => {
         return;
       }
 
-      const res = await fetch('/api/admin/questions', {
+      const res = await apiFetch('/api/admin/questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -430,7 +431,7 @@ const AdminDashboard = () => {
   const handleSaveStudent = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/admin/students', {
+      const res = await apiFetch('/api/admin/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(studentForm),

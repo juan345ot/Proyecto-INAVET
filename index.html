@@ -4,7 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="./logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
+    <!-- GitHub Pages SPA redirect handler -->
+    <script>
+      (function() {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
     <title>INAVET - Formación Online de Auxiliar Veterinario</title>
     <meta http-equiv="Content-Language" content="es">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +45,7 @@
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": "INAVET",
-      "image": "https://juan345ot.github.io/ProyectoPaginaCurso/assets/logo.png",
+      "image": "https://juan345ot.github.io/Proyecto-INAVET/assets/logo.png",
       "telephone": "+5492926451511",
       "priceRange": "$$",
       "address": {
@@ -49,17 +58,17 @@
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://juan345ot.github.io/ProyectoPaginaCurso/" />
+    <meta property="og:url" content="https://juan345ot.github.io/Proyecto-INAVET/" />
     <meta property="og:title" content="INAVET - Convertite en Auxiliar Veterinario" />
     <meta property="og:description" content="Curso 100% online con certificación. Formación flexible para amantes de los animales. ¡Inscribite hoy!" />
-    <meta property="og:image" content="https://juan345ot.github.io/ProyectoPaginaCurso/logo.png" />
+    <meta property="og:image" content="https://juan345ot.github.io/Proyecto-INAVET/logo.png" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://juan345ot.github.io/ProyectoPaginaCurso/" />
+    <meta property="twitter:url" content="https://juan345ot.github.io/Proyecto-INAVET/" />
     <meta property="twitter:title" content="INAVET - Curso de Auxiliar Veterinario" />
     <meta property="twitter:description" content="Formación profesional online con clases grabadas y certificación incluida. Tu futuro empieza acá." />
-    <meta property="twitter:image" content="https://juan345ot.github.io/ProyectoPaginaCurso/logo.png" />
+    <meta property="twitter:image" content="https://juan345ot.github.io/Proyecto-INAVET/logo.png" />
   </head>
   <body>
     <div id="root"></div>

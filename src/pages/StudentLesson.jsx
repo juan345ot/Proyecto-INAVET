@@ -14,6 +14,7 @@ import {
   BookOpen,
   CheckCircle2,
 } from 'lucide-react';
+import { apiFetch } from '../lib/api';
 
 const StudentLesson = () => {
   const { id } = useParams();
@@ -29,7 +30,7 @@ const StudentLesson = () => {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`/api/student/lesson/${id}`, {
+      const res = await apiFetch(`/api/student/lesson/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -52,7 +53,7 @@ const StudentLesson = () => {
   const handleToggleMaterial = async (materialId) => {
     try {
       setTogglingMaterialId(materialId);
-      const res = await fetch(`/api/student/lesson/${id}/material/${materialId}/toggle-view`, {
+      const res = await apiFetch(`/api/student/lesson/${id}/material/${materialId}/toggle-view`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });

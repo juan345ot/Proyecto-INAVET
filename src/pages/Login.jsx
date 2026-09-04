@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Lock, User as UserIcon, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import logo from '../assets/logo.png';
+import { apiFetch } from '../lib/api';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -19,7 +20,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await apiFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),

@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Clock,
 } from 'lucide-react';
+import { apiFetch } from '../lib/api';
 
 const StudentHome = () => {
   const [data, setData] = useState(null);
@@ -25,7 +26,7 @@ const StudentHome = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch('/api/student/dashboard', {
+        const res = await apiFetch('/api/student/dashboard', {
           headers: { Authorization: `Bearer ${token}` },
         });
         const resData = await res.json();

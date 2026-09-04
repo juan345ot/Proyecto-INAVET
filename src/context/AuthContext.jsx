@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiFetch } from '../lib/api';
 
 const AuthContext = createContext(null);
 
@@ -14,7 +15,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
       try {
-        const res = await fetch('/api/auth/me', {
+        const res = await apiFetch('/api/auth/me', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

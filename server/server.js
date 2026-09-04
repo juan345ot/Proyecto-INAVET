@@ -18,7 +18,23 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // Middlewares
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  process.env.FRONTEND_URL, // URL del Static Site de Render
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permitir herramientas sin origin (Postman, curl) y orígenes autorizados
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS no permitido para: ${origin}`));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Conexión a MongoDB

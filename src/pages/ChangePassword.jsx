@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { KeyRound, AlertCircle, CheckCircle2 } from 'lucide-react';
 import logo from '../assets/logo.png';
+import { apiFetch } from '../lib/api';
 
 const ChangePassword = () => {
   const [newPassword, setNewPassword] = useState('');
@@ -30,7 +31,7 @@ const ChangePassword = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/change-password', {
+      const res = await apiFetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
