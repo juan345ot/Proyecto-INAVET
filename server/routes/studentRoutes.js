@@ -1,4 +1,6 @@
 import express from 'express';
+import mongoose from 'mongoose';
+import { GridFSBucket } from 'mongodb';
 import { protect, requireRole } from '../middleware/authMiddleware.js';
 import Module from '../models/Module.js';
 import Lesson from '../models/Lesson.js';
@@ -172,6 +174,46 @@ router.get('/lesson/:id', async (req, res) => {
         progress: progress || { materialsViewed: [], examPassed: false, isCompleted: false },
       },
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   GET /api/student/material/:materialId/file
+// @desc    Descarga segura de un archivo cargado por el administrador.
+router.get('/material/:materialId/file', async (req, res) => {
+  try {
+    const material = await Material.findById(req.params.materialId);
+    if (!material || !material.fileId) {
+      return res.status(404).json({ success: false, message: 'Archivo no encontrado.' });
+    }
+
+    const access = await canAccessLesson(req.user._id, material.lessonId);
+    if (!access.allowed) {
+      return res.status(403).json({ success: false, message: access.reason });
+    }
+
+    if (!mongoose.connection.db) {
+      return res.status(503).json({ success: false, message: 'La base de datos no está disponible.' });
+    }
+
+    const bucket = new GridFSBucket(mongoose.connection.db, { bucketName: 'materials' });
+    const file = await mongoose.connection.db.collection('materials.files').findOne({ _id: material.fileId });
+    if (!file) {
+      return res.status(404).json({ success: false, message: 'Archivo no encontrado.' });
+    }
+
+    res.set({
+      'Content-Type': material.mimeType || file.contentType || 'application/octet-stream',
+      'Content-Length': file.length,
+      'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(material.fileName || file.filename)}`,
+    });
+
+    bucket.openDownloadStream(material.fileId)
+      .on('error', () => {
+        if (!res.headersSent) res.status(500).json({ success: false, message: 'No se pudo abrir el archivo.' });
+      })
+      .pipe(res);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
