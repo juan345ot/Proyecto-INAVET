@@ -6,6 +6,8 @@
   "homepage": "https://github.com/juan345ot/ProyectoPaginaCurso.git",
   "scripts": {
     "dev": "vite",
+    "server": "node server/server.js",
+    "start": "node server/server.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -13,9 +15,16 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.563.0",
+    "mongoose": "^9.9.4",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

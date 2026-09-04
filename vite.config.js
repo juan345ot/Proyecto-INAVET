@@ -7,6 +7,12 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: "/ProyectoPaginaCurso/",
   server: {
-    allowedHosts: 'all'
-  }
+    allowedHosts: 'all',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
+  },
 });
