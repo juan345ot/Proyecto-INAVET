@@ -75,6 +75,28 @@ const StudentLesson = () => {
     }
   };
 
+  const handleOpenMaterial = async (material) => {
+    try {
+      if (material.fileId) {
+        const res = await apiFetch(`/api/student/material/${material._id}/file`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.message || 'No se pudo abrir el archivo.');
+        }
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        window.open(objectUrl, '_blank', 'noopener,noreferrer');
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60 * 1000);
+        return;
+      }
+      if (material.url) window.open(material.url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      alert(err.message || 'No se pudo abrir el archivo.');
+    }
+  };
+
   // Ayudante para incrustar YouTube
   const getEmbedYoutubeUrl = (url) => {
     if (!url) return null;
@@ -218,16 +240,14 @@ const StudentLesson = () => {
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      {mat.url && (
-                        <a
-                          href={mat.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-secondary hover:border-secondary text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs"
+                      {(mat.url || mat.fileId) && (
+                        <button
+                          onClick={() => handleOpenMaterial(mat)}
+                          className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-secondary hover:border-secondary text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                         >
                           <span>Abrir</span>
                           <ExternalLink size={13} />
-                        </a>
+                        </button>
                       )}
 
                       <button
