@@ -1131,7 +1131,6 @@ const AdminDashboard = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={uploadingMaterial}
                   className="px-6 py-2.5 rounded-xl bg-secondary text-white font-bold hover:bg-secondary-hover cursor-pointer"
                 >
                   Guardar Módulo
@@ -1340,7 +1339,8 @@ const AdminDashboard = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-secondary text-white font-bold hover:bg-secondary-hover cursor-pointer"
+                  disabled={uploadingMaterial}
+                  className="px-6 py-2.5 rounded-xl bg-secondary text-white font-bold hover:bg-secondary-hover cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {uploadingMaterial ? 'Cargando archivo...' : 'Guardar Material'}
                 </button>
