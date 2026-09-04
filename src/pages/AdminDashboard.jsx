@@ -15,6 +15,7 @@ import {
   Video,
   FileText,
   CheckCircle2,
+  UploadCloud,
   X,
   HelpCircle,
   Link as LinkIcon,
@@ -54,6 +55,9 @@ const AdminDashboard = () => {
   // Alumnos
   const [studentForm, setStudentForm] = useState({ firstName: '', lastName: '', dni: '', email: '', phone: '', username: '', password: '', status: 'ACTIVE' });
   const [tempPassword, setTempPassword] = useState('');
+  const [materialFile, setMaterialFile] = useState(null);
+  const [isDraggingMaterialFile, setIsDraggingMaterialFile] = useState(false);
+  const [uploadingMaterial, setUploadingMaterial] = useState(false);
 
   const { token, logout, user } = useAuth();
   const navigate = useNavigate();
@@ -255,22 +259,56 @@ const AdminDashboard = () => {
       });
       setModalData(null);
     }
+    setMaterialFile(null);
+    setIsDraggingMaterialFile(false);
     setModalType('MATERIAL');
+  };
+
+  const selectMaterialFile = (file) => {
+    if (!file) return;
+    const allowed = ['pdf', 'ppt', 'pptx', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp', 'gif'];
+    const extension = file.name.split('.').pop().toLowerCase();
+
+    if (!allowed.includes(extension)) {
+      alert('Formato no permitido. Elegí un PDF, PowerPoint, Word o imagen.');
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      alert('El archivo supera el límite de 20 MB.');
+      return;
+    }
+
+    setMaterialFile(file);
+    if (!materialForm.title.trim()) {
+      setMaterialForm((prev) => ({ ...prev, title: file.name.replace(/\.[^.]+$/, '') }));
+    }
   };
 
   const handleSaveMaterial = async (e) => {
     e.preventDefault();
     try {
-      const url = modalData ? `/api/admin/materials/${modalData._id}` : '/api/admin/materials';
-      const method = modalData ? 'PUT' : 'POST';
+      setUploadingMaterial(true);
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(materialForm),
-      });
+      const isNewUploadedFile = !modalData && materialFile;
+      const url = isNewUploadedFile ? '/api/admin/materials/upload' : (modalData ? `/api/admin/materials/${modalData._id}` : '/api/admin/materials');
+      const method = modalData ? 'PUT' : 'POST';
+      const headers = { Authorization: `Bearer ${token}` };
+      let body;
+
+      if (isNewUploadedFile) {
+        const formData = new FormData();
+        Object.entries(materialForm).forEach(([key, value]) => formData.append(key, value));
+        formData.append('file', materialFile);
+        body = formData;
+      } else {
+        headers['Content-Type'] = 'application/json';
+        body = JSON.stringify(materialForm);
+      }
+
+      const res = await apiFetch(url, { method, headers, body });
       const data = await res.json();
       if (data.success) {
+        setMaterialFile(null);
         setModalType(null);
         fetchAllData();
       } else {
@@ -278,6 +316,8 @@ const AdminDashboard = () => {
       }
     } catch (err) {
       alert('Error de conexión');
+    } finally {
+      setUploadingMaterial(false);
     }
   };
 
@@ -1091,6 +1131,7 @@ const AdminDashboard = () => {
                 </button>
                 <button
                   type="submit"
+                  disabled={uploadingMaterial}
                   className="px-6 py-2.5 rounded-xl bg-secondary text-white font-bold hover:bg-secondary-hover cursor-pointer"
                 >
                   Guardar Módulo
@@ -1230,13 +1271,50 @@ const AdminDashboard = () => {
                 </select>
               </div>
 
+              {!modalData && (
+                <div>
+                  <label className="block mb-1">Archivo (opcional)</label>
+                  <label
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDraggingMaterialFile(true);
+                    }}
+                    onDragLeave={() => setIsDraggingMaterialFile(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDraggingMaterialFile(false);
+                      selectMaterialFile(e.dataTransfer.files?.[0]);
+                    }}
+                    className={`flex flex-col items-center justify-center gap-2 p-5 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${
+                      isDraggingMaterialFile
+                        ? 'border-secondary bg-secondary/10'
+                        : 'border-slate-200 bg-slate-50 hover:border-secondary/60 hover:bg-secondary/5'
+                    }`}
+                  >
+                    <UploadCloud size={26} className="text-secondary" />
+                    <span className="text-sm font-bold text-slate-700">
+                      {materialFile ? materialFile.name : 'Arrastrá un archivo aquí o hacé clic para seleccionarlo'}
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400">
+                      PDF, PowerPoint, Word o imagen · Máximo 20 MB
+                    </span>
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,.ppt,.pptx,.doc,.docx,.jpg,.jpeg,.png,.webp,.gif"
+                      onChange={(e) => selectMaterialFile(e.target.files?.[0])}
+                    />
+                  </label>
+                </div>
+              )}
+
               <div>
                 <label className="block mb-1">URL del Archivo o Enlace</label>
                 <input
                   type="url"
                   value={materialForm.url}
                   onChange={(e) => setMaterialForm({ ...materialForm, url: e.target.value })}
-                  placeholder="https://..."
+                  placeholder="https://... (opcional si cargás un archivo)"
                   className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm"
                 />
               </div>
@@ -1264,7 +1342,7 @@ const AdminDashboard = () => {
                   type="submit"
                   className="px-6 py-2.5 rounded-xl bg-secondary text-white font-bold hover:bg-secondary-hover cursor-pointer"
                 >
-                  Guardar Material
+                  {uploadingMaterial ? 'Cargando archivo...' : 'Guardar Material'}
                 </button>
               </div>
             </form>
