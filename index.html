@@ -16,7 +16,7 @@
         } catch (error) {
           // The app can still load when browser storage is unavailable.
         }
-        var target = saved ? new URL(saved, current.origin) : current;
+        var target = saved ? new URL(saved, current.origin) : new URL(current.href);
         if (target.origin !== current.origin) target = current;
         // Remove the broken legacy GitHub Pages suffix, including repeated copies.
         if (target.search.indexOf('?/') === 0) target.search = '';
