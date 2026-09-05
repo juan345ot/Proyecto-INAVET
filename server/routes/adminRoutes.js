@@ -190,20 +190,31 @@ router.post('/students/:id/reset-password', async (req, res) => {
   }
 });
 
-// Desactivación lógica
+// Eliminación definitiva de un alumno y sus datos académicos.
 router.delete('/students/:id', async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(400).json({ success: false, message: 'Identificador de alumno inválido' });
+  }
+  const session = await mongoose.startSession();
   try {
-    const student = await User.findById(req.params.id);
-    if (!student || student.role !== 'STUDENT') {
+    let deleted = false;
+    await session.withTransaction(async () => {
+      const student = await User.findOne({ _id: req.params.id, role: 'STUDENT' }).session(session);
+      if (!student) return;
+      await StudentProgress.deleteMany({ studentId: student._id }).session(session);
+      await ExamAttempt.deleteMany({ studentId: student._id }).session(session);
+      await User.deleteOne({ _id: student._id, role: 'STUDENT' }).session(session);
+      deleted = true;
+    });
+    if (!deleted) {
       return res.status(404).json({ success: false, message: 'Alumno no encontrado' });
     }
-
-    student.status = 'INACTIVE';
-    await student.save();
-
-    res.json({ success: true, message: 'Alumno desactivado correctamente' });
+    res.json({ success: true, message: 'Alumno eliminado correctamente' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Error al eliminar alumno:', error);
+    res.status(500).json({ success: false, message: 'No se pudo eliminar al alumno. Intentá nuevamente.' });
+  } finally {
+    await session.endSession();
   }
 });
 
