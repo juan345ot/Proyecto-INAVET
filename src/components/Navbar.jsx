@@ -52,22 +52,22 @@ const Navbar = () => {
                 style={{ width: `${scrollProgress}%` }}
             ></div>
 
-            <div className="container mx-auto px-6 h-full flex items-center justify-between transition-all duration-500">
+            <div className="container mx-auto px-3 sm:px-6 h-full flex items-center justify-between gap-2 transition-all duration-500">
                     
-                    <div className="flex items-center gap-4 group cursor-pointer" onClick={() => scrollToSection('inicio')}>
+                    <div className="flex items-center gap-1.5 sm:gap-4 group cursor-pointer" onClick={() => scrollToSection('inicio')}>
                         <div className="relative">
                             <div className="absolute inset-0 bg-primary blur-2xl opacity-0 group-hover:opacity-40 transition-opacity"></div>
                             <img 
                                 src={logo} 
                                 alt="INAVET" 
                                 className={`transition-all duration-500 object-contain relative z-10 
-                                    ${scrolled ? 'h-12 md:h-16' : 'h-20 md:h-28'}
+                                    ${scrolled ? 'h-10 sm:h-12 md:h-16' : 'h-12 sm:h-20 md:h-28'}
                                 `} 
                             />
                         </div>
                         <div className="flex flex-col">
                             <span className={`font-black tracking-tighter leading-none transition-colors duration-500 
-                                ${scrolled ? 'text-secondary text-xl md:text-2xl' : 'text-white text-3xl md:text-4xl'}
+                                ${scrolled ? 'text-secondary text-lg sm:text-xl md:text-2xl' : 'text-white text-xl sm:text-3xl md:text-4xl'}
                             `}>
                                 INAVET
                             </span>
@@ -117,10 +117,22 @@ const Navbar = () => {
                             </Link>
                 </div>
 
-                <div className="md:hidden">
+                <div className="md:hidden flex shrink-0 items-center gap-2">
+                    <Link
+                        to="/login"
+                        onClick={() => setIsOpen(false)}
+                        className="min-h-11 inline-flex items-center justify-center rounded-full bg-primary px-3 text-xs font-black tracking-wide text-slate-950 shadow-md transition-colors hover:bg-primary-hover"
+                        aria-label="Ingresar al Aula Virtual"
+                    >
+                        INGRESAR
+                    </Link>
                     <button
+                        type="button"
                         onClick={() => setIsOpen(!isOpen)}
-                        className={`p-3 rounded-2xl transition-all duration-300 ${
+                        aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
+                        aria-expanded={isOpen}
+                        aria-controls="mobile-navigation"
+                        className={`p-2 sm:p-3 rounded-2xl transition-all duration-300 ${
                             scrolled ? 'text-secondary bg-gray-100' : 'text-white bg-white/20 backdrop-blur-sm'
                         }`}
                     >
@@ -129,7 +141,7 @@ const Navbar = () => {
                 </div>
             </div>
 
-            <div className={`md:hidden absolute top-full left-0 w-full transition-all duration-500 ease-in-out overflow-hidden ${
+            <div id="mobile-navigation" inert={!isOpen} className={`md:hidden absolute top-full left-0 w-full transition-all duration-500 ease-in-out overflow-hidden ${
                 isOpen ? 'max-h-[32rem] opacity-100' : 'max-h-0 opacity-0'
             }`}>
                 <div className="bg-white/95 backdrop-blur-md shadow-2xl border-t border-gray-100 py-8 px-6 flex flex-col gap-3">
@@ -150,15 +162,6 @@ const Navbar = () => {
                             </div>
                         </button>
                     ))}
-                    <Link
-                        to="/login"
-                        onClick={() => setIsOpen(false)}
-                        className="w-full py-4 px-6 bg-primary text-slate-950 font-black text-lg transition-all flex items-center justify-between rounded-2xl shadow-md group active:scale-[0.98]"
-                        aria-label="Ingresar al Aula Virtual"
-                    >
-                        <span>INGRESAR AL AULA</span>
-                        <ChevronRight size={18} />
-                    </Link>
                 </div>
             </div>
         </nav>
@@ -166,3 +169,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
