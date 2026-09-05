@@ -31,6 +31,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('modulos'); // 'modulos' | 'examenes' | 'alumnos'
   const [stats, setStats] = useState(null);
   const [students, setStudents] = useState([]);
+  const [deletingStudentId, setDeletingStudentId] = useState(null);
   const [curriculum, setCurriculum] = useState([]); // Módulos con clases, materiales y examen anidados
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -512,6 +513,31 @@ const AdminDashboard = () => {
       }
     } catch (err) {
       alert('Error de conexión');
+    }
+  };
+
+  const handleDeleteStudent = async (student) => {
+    if (deletingStudentId) return;
+    if (!window.confirm(`¿Eliminar definitivamente a ${student.firstName} ${student.lastName} (@${student.username})?\n\nSe eliminarán su cuenta, progreso e intentos de examen. Esta acción no se puede deshacer.\n\nPara suspender el acceso temporalmente, usá “Dar de baja”.`)) return;
+
+    setDeletingStudentId(student._id);
+    try {
+      const res = await apiFetch(`/api/admin/students/${student._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.message || 'No se pudo eliminar al alumno.');
+        return;
+      }
+      setStudents((current) => current.filter((item) => item._id !== student._id));
+      alert('Alumno eliminado correctamente.');
+      fetchAllData();
+    } catch {
+      alert('No se pudo confirmar la eliminación. Revisá tu conexión y actualizá la lista antes de volver a intentar.');
+    } finally {
+      setDeletingStudentId(null);
     }
   };
 
@@ -1068,6 +1094,16 @@ const AdminDashboard = () => {
                           >
                             <KeyRound size={14} />
                             <span>Reset Clave</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteStudent(st)}
+                            disabled={deletingStudentId !== null}
+                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                            title="Eliminar alumno definitivamente"
+                            aria-label={`Eliminar a ${st.firstName} ${st.lastName}`}
+                          >
+                            <Trash2 size={18} aria-hidden="true" />
                           </button>
                         </td>
                       </tr>
