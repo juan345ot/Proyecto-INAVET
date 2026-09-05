@@ -4,13 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="./logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- GitHub Pages SPA redirect handler -->
+    <!-- Restore deep links without re-encoding their query string. -->
     <script>
-      (function() {
-        var redirect = sessionStorage.redirect;
-        delete sessionStorage.redirect;
-        if (redirect && redirect !== location.href) {
-          history.replaceState(null, null, redirect);
+      (function () {
+        var current = new URL(window.location.href);
+        var saved = null;
+        try {
+          saved = sessionStorage.getItem('inavet:return-path');
+          sessionStorage.removeItem('inavet:return-path');
+          sessionStorage.removeItem('redirect');
+        } catch (error) {
+          // The app can still load when browser storage is unavailable.
+        }
+        var target = saved ? new URL(saved, current.origin) : current;
+        if (target.origin !== current.origin) target = current;
+        // Remove the broken legacy GitHub Pages suffix, including repeated copies.
+        if (target.search.indexOf('?/') === 0) target.search = '';
+        if (target.href !== current.href) {
+          history.replaceState(null, '', target.pathname + target.search + target.hash);
         }
       })();
     </script>
