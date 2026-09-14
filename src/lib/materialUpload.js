@@ -14,13 +14,13 @@ export async function uploadMaterial(file, form, token, onProgress, signal) {
     session.expires = Date.now() + 3500_000;
     sessions.set(file, session);
   }
-  await json(await fetch(`${session.url}?action=create`,{method:'POST',headers:{Authorization:`Bearer ${session.ticket}`},signal}));
+  await json(await fetch(`${session.url}?action=create`,{method:'POST',headers:{'X-Storage-Token':session.ticket},signal}));
   for (let offset=0,index=0;offset<file.size;offset+=session.chunkBytes,index++) {
     const chunk=file.slice(offset,offset+session.chunkBytes);
     const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await chunk.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
     for (let attempt=0;;attempt++) {
       try {
-        await json(await fetch(`${session.url}?action=chunk`,{method:'POST',headers:{Authorization:`Bearer ${session.ticket}`,'Content-Type':'application/octet-stream','X-Chunk-Index':String(index),'X-Chunk-SHA256':hash},body:chunk,signal}));
+        await json(await fetch(`${session.url}?action=chunk`,{method:'POST',headers:{'X-Storage-Token':session.ticket,'Content-Type':'application/octet-stream','X-Chunk-Index':String(index),'X-Chunk-SHA256':hash},body:chunk,signal}));
         break;
       } catch(error) {
         if (signal?.aborted || attempt>=2) throw error;
@@ -36,6 +36,6 @@ export async function uploadMaterial(file, form, token, onProgress, signal) {
 export async function cancelMaterialUpload(file) {
   const session=file && sessions.get(file);
   if (!session) return;
-  await json(await fetch(`${session.url}?action=cancel`,{method:'POST',headers:{Authorization:`Bearer ${session.ticket}`}}));
+  await json(await fetch(`${session.url}?action=cancel`,{method:'POST',headers:{'X-Storage-Token':session.ticket}}));
   sessions.delete(file);
 }

@@ -7,7 +7,7 @@ declare(strict_types=1);
 final class ChunkStore
 {
     public const MAX_BYTES = 500000000;
-    public const CHUNK_BYTES = 5000000;
+    public const CHUNK_BYTES = 1000000;
     private string $root;
 
     public function __construct(string $root)
@@ -83,7 +83,8 @@ final class ChunkStore
                     hash_update($hash, $data);
                     if ($data !== '' && fwrite($out, $data) !== strlen($data)) throw new RuntimeException('Disk write failed');
                 }
-                if ($bytes !== $expected || !hash_equals($sha256, hash_final($hash))) throw new RuntimeException('Fragment integrity failure');
+                if ($bytes !== $expected) throw new RuntimeException("Fragment length mismatch: $bytes of $expected bytes");
+                if (!hash_equals($sha256, hash_final($hash))) throw new RuntimeException('Fragment checksum mismatch');
                 if (!fflush($out)) throw new RuntimeException('Flush failed');
                 $state['received'] += $bytes;
                 $state['hashes'][] = $sha256;

@@ -10,7 +10,7 @@ if ($origin !== '') {
     header('Access-Control-Allow-Origin: ' . $origin);
     header('Vary: Origin');
 }
-header('Access-Control-Allow-Headers: Authorization, Content-Type, X-Chunk-Index, X-Chunk-SHA256');
+header('Access-Control-Allow-Headers: Authorization, X-Storage-Token, Content-Type, X-Chunk-Index, X-Chunk-SHA256');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Cache-Control: private, no-store');
 header('Referrer-Policy: no-referrer');
@@ -85,7 +85,7 @@ try {
         fclose($f);flock($lock,LOCK_UN);fclose($lock);exit;
     }
     if($_SERVER['REQUEST_METHOD']!=='POST') throw new RuntimeException('Method denied');
-    $auth=$_SERVER['HTTP_AUTHORIZATION']??$_SERVER['REDIRECT_HTTP_AUTHORIZATION']??'';
+    $auth=isset($_SERVER['HTTP_X_STORAGE_TOKEN']) ? 'Bearer '.$_SERVER['HTTP_X_STORAGE_TOKEN'] : ($_SERVER['HTTP_AUTHORIZATION']??$_SERVER['REDIRECT_HTTP_AUTHORIZATION']??'');
     if(!str_starts_with($auth,'Bearer ')) throw new RuntimeException('Authorization required');
     $c=claims(substr($auth,7),$config['secret']); $action=$_GET['action']??'';
     if(!in_array($action,['create','chunk','seal','commit','delete','cancel'],true)) throw new RuntimeException('Invalid operation');

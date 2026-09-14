@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 // Decimal MB in both UI and server. Not yet connected to production routes.
 export const MAX_FILE_BYTES = 500_000_000;
-export const CHUNK_BYTES = 5_000_000;
+export const CHUNK_BYTES = 1_000_000;
 export const UPLOAD_TTL_SECONDS = 3600;
 const extensions = new Set(['pdf', 'ppt', 'pptx', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp', 'gif']);
 

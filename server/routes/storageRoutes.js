@@ -16,7 +16,7 @@ const enabled = () => process.env.STORAGE_ENABLED === 'true' && secret() && endp
 
 async function callStorage(op, uploadId) {
   const token = signServiceTicket({op, uploadId}, secret());
-  const res = await fetch(`${endpoint()}?action=${op}`, {method:'POST', headers:{Authorization:`Bearer ${token}`}, signal:AbortSignal.timeout(120000)});
+  const res = await fetch(`${endpoint()}?action=${op}`, {method:'POST', headers:{'X-Storage-Token':token}, signal:AbortSignal.timeout(120000)});
   const data = await res.json();
   if (!res.ok || !data.success) throw new Error(data.message || 'Almacenamiento no disponible');
   return data.data;
