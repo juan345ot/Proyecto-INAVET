@@ -644,20 +644,20 @@ const AdminDashboard = () => {
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Alumnos</span>
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Alumnos</span>
               <p className="text-2xl font-black text-slate-800 mt-1">{stats.totalStudents}</p>
               <span className="text-xs text-emerald-600 font-bold">{stats.activeStudents} activos</span>
             </div>
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Módulos</span>
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Módulos</span>
               <p className="text-2xl font-black text-slate-800 mt-1">{curriculum.length}</p>
             </div>
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Clases Activas</span>
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Clases Activas</span>
               <p className="text-2xl font-black text-slate-800 mt-1">{stats.totalLessons}</p>
             </div>
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Exámenes Creados</span>
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Exámenes Creados</span>
               <p className="text-2xl font-black text-slate-800 mt-1">{exams.length}</p>
             </div>
           </div>
@@ -671,7 +671,7 @@ const AdminDashboard = () => {
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                   Estructura y Contenidos del Curso
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-600 mt-1">
                   Desplegá cada módulo para ver y editar sus clases, subir materiales y asociar exámenes.
                 </p>
               </div>
@@ -709,7 +709,7 @@ const AdminDashboard = () => {
                             <span className="text-xs font-black uppercase text-secondary tracking-wider">
                               Módulo {mod.order}
                             </span>
-                            <span className="text-[11px] font-bold text-slate-400">
+                            <span className="text-[11px] font-bold text-slate-600">
                               ({(mod.lessons || []).length} clases)
                             </span>
                           </div>
@@ -749,7 +749,7 @@ const AdminDashboard = () => {
                     {isExpanded && (
                       <div className="p-6 space-y-4">
                         {(mod.lessons || []).length === 0 ? (
-                          <div className="text-center py-6 text-slate-400 text-xs italic bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                          <div className="text-center py-6 text-slate-600 text-xs italic bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                             No hay clases creadas en este módulo aún. Hacé clic en "Agregar Clase".
                           </div>
                         ) : (
@@ -767,12 +767,12 @@ const AdminDashboard = () => {
                                     onClick={() => toggleLesson(lesson._id)}
                                     className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
                                   >
-                                    <button className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500">
+                                    <button className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600">
                                       {isLessonExp ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                                     </button>
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-2">
-                                        <span className="text-[11px] font-black uppercase text-primary tracking-wider">
+                                        <span className="text-[11px] font-black uppercase text-sky-700 tracking-wider">
                                           Clase {lesson.order} (Orden correlativo)
                                         </span>
                                         {lesson.videoUrl && (
@@ -829,7 +829,7 @@ const AdminDashboard = () => {
                                           href={lesson.videoUrl}
                                           target="_blank"
                                           rel="noreferrer"
-                                          className="text-primary hover:underline truncate"
+                                          className="text-sky-700 hover:underline truncate"
                                         >
                                           {lesson.videoUrl}
                                         </a>
@@ -838,11 +838,11 @@ const AdminDashboard = () => {
 
                                     {/* Materiales */}
                                     <div className="space-y-2">
-                                      <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                                      <span className="text-[11px] font-black uppercase text-slate-600 tracking-wider">
                                         Materiales ({lesson.materials?.length || 0})
                                       </span>
                                       {lesson.materials?.length === 0 ? (
-                                        <p className="text-xs text-slate-400 italic">No hay materiales en esta clase.</p>
+                                        <p className="text-xs text-slate-600 italic">No hay materiales en esta clase.</p>
                                       ) : (
                                         lesson.materials.map((mat) => (
                                           <div
@@ -863,20 +863,20 @@ const AdminDashboard = () => {
                                                   href={mat.url}
                                                   target="_blank"
                                                   rel="noreferrer"
-                                                  className="text-primary hover:underline text-xs font-bold"
+                                                  className="text-sky-700 hover:underline text-xs font-bold"
                                                 >
                                                   Ver Link
                                                 </a>
                                               )}
                                               <button
                                                 onClick={() => openMaterialModal(lesson._id, mat)}
-                                                className="text-slate-400 hover:text-secondary"
+                                                className="text-slate-600 hover:text-secondary"
                                               >
                                                 <Edit3 size={13} />
                                               </button>
                                               <button
                                                 onClick={() => handleDeleteMaterial(mat._id)}
-                                                className="text-slate-400 hover:text-rose-600"
+                                                className="text-slate-600 hover:text-rose-600"
                                               >
                                                 <Trash2 size={13} />
                                               </button>
@@ -888,7 +888,7 @@ const AdminDashboard = () => {
 
                                     {/* Examen de la Clase */}
                                     <div className="pt-2">
-                                      <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                                      <span className="text-[11px] font-black uppercase text-slate-600 tracking-wider">
                                         Examen Asociado
                                       </span>
                                       {lesson.exam ? (
@@ -908,7 +908,7 @@ const AdminDashboard = () => {
                                           </button>
                                         </div>
                                       ) : (
-                                        <div className="mt-1 text-xs text-slate-400 italic flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+                                        <div className="mt-1 text-xs text-slate-600 italic flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
                                           <span>Esta clase no tiene examen asociado.</span>
                                           <button
                                             onClick={() => openLessonModal(mod._id, lesson)}
@@ -942,7 +942,7 @@ const AdminDashboard = () => {
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                   Banco de Exámenes y Preguntas
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-600 mt-1">
                   Creá, editá exámenes, configurá el porcentaje de aprobación y agregá preguntas autocorregibles.
                 </p>
               </div>
@@ -973,7 +973,7 @@ const AdminDashboard = () => {
                     </div>
 
                     <h3 className="text-lg font-black text-slate-800">{ex.title}</h3>
-                    {ex.description && <p className="text-xs text-slate-500">{ex.description}</p>}
+                    {ex.description && <p className="text-xs text-slate-600">{ex.description}</p>}
                   </div>
 
                   <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
@@ -1016,7 +1016,7 @@ const AdminDashboard = () => {
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                   Alumnos del Instituto
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-600 mt-1">
                   Creá nuevos alumnos, reseteá contraseñas temporales y activá o desactivá cuentas.
                 </p>
               </div>
@@ -1036,7 +1036,7 @@ const AdminDashboard = () => {
             <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-slate-700">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-600">
                     <tr>
                       <th className="p-4">Alumno</th>
                       <th className="p-4">DNI / Usuario</th>
@@ -1053,9 +1053,9 @@ const AdminDashboard = () => {
                         </td>
                         <td className="p-4 text-xs font-semibold text-slate-600">
                           <div>DNI: {st.dni}</div>
-                          <div className="text-primary font-bold">@{st.username}</div>
+                          <div className="text-sky-700 font-bold">@{st.username}</div>
                         </td>
-                        <td className="p-4 text-xs text-slate-500">
+                        <td className="p-4 text-xs text-slate-600">
                           <div>{st.email}</div>
                           <div>{st.phone || '-'}</div>
                         </td>
@@ -1064,7 +1064,7 @@ const AdminDashboard = () => {
                             className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
                               st.status === 'ACTIVE'
                                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-slate-100 text-slate-500 border border-slate-200'
+                                : 'bg-slate-100 text-slate-600 border border-slate-200'
                             }`}
                           >
                             {st.status === 'ACTIVE' ? 'Activo' : 'Inactivo'}
@@ -1217,7 +1217,7 @@ const AdminDashboard = () => {
                     onChange={(e) => setLessonForm({ ...lessonForm, order: Number(e.target.value) })}
                     className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm"
                   />
-                  <span className="text-[10px] text-slate-400 font-normal">
+                  <span className="text-[10px] text-slate-600 font-normal">
                     Determina el orden de desbloqueo secuencial
                   </span>
                 </div>
@@ -1330,7 +1330,7 @@ const AdminDashboard = () => {
                     <span className="text-sm font-bold text-slate-700">
                       {materialFile ? materialFile.name : 'Arrastrá un archivo aquí o hacé clic para seleccionarlo'}
                     </span>
-                    <span className="text-[10px] font-medium text-slate-400">
+                    <span className="text-[10px] font-medium text-slate-600">
                       PDF, PowerPoint, Word o imagen · Máximo 20 MB
                     </span>
                     <input
@@ -1428,7 +1428,7 @@ const AdminDashboard = () => {
                     onChange={(e) => setExamForm({ ...examForm, passingScorePercent: Number(e.target.value) })}
                     className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm"
                   />
-                  <span className="text-[10px] text-slate-400 font-normal">Por defecto: 70%</span>
+                  <span className="text-[10px] text-slate-600 font-normal">Por defecto: 70%</span>
                 </div>
 
                 <div>
@@ -1483,7 +1483,7 @@ const AdminDashboard = () => {
               </div>
               <button
                 onClick={() => setModalType(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200"
+                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"
               >
                 <X size={18} />
               </button>
@@ -1491,11 +1491,11 @@ const AdminDashboard = () => {
 
             {/* Listado de preguntas existentes */}
             <div className="space-y-3">
-              <span className="text-xs font-black uppercase text-slate-400">
+              <span className="text-xs font-black uppercase text-slate-600">
                 Preguntas Actuales ({examQuestions.length})
               </span>
               {examQuestions.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No hay preguntas cargadas en este examen.</p>
+                <p className="text-xs text-slate-600 italic">No hay preguntas cargadas en este examen.</p>
               ) : (
                 examQuestions.map((q, idx) => (
                   <div key={q._id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
@@ -1505,7 +1505,7 @@ const AdminDashboard = () => {
                       </span>
                       <button
                         onClick={() => handleDeleteQuestion(q._id)}
-                        className="text-slate-400 hover:text-rose-600 shrink-0"
+                        className="text-slate-600 hover:text-rose-600 shrink-0"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -1555,7 +1555,7 @@ const AdminDashboard = () => {
                         name="correctOpt"
                         checked={questionForm.correctOptionIndex === idx}
                         onChange={() => setQuestionForm({ ...questionForm, correctOptionIndex: idx })}
-                        className="w-4 h-4 text-primary cursor-pointer"
+                        className="w-4 h-4 text-sky-700 cursor-pointer"
                         title="Marcar como respuesta correcta"
                       />
                       <input
@@ -1576,7 +1576,7 @@ const AdminDashboard = () => {
                       />
                     </div>
                   ))}
-                  <p className="text-[10px] text-slate-400 font-normal">
+                  <p className="text-[10px] text-slate-600 font-normal">
                     Seleccioná el botón circular al lado de la opción para marcarla como la respuesta correcta.
                   </p>
                 </div>
@@ -1708,7 +1708,7 @@ const AdminDashboard = () => {
             <h3 className="text-xl font-black text-slate-800">
               Resetear Contraseña a {modalData.firstName} {modalData.lastName}
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-600">
               El alumno será obligado a cambiar esta contraseña en su próximo ingreso.
             </p>
             <form onSubmit={handleResetPassword} className="space-y-4">
