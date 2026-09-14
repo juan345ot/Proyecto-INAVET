@@ -9,7 +9,23 @@ export const seedInitialData = async () => {
   try {
     // 1. Asegurar la existencia del Administrador
     const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminExists = await User.findOne({ username: adminUsername });
+    let adminExists = await User.findOne({ username: adminUsername });
+    // Explicit, idempotent rename of an existing administrator; never create a second account.
+    const previousUsername = process.env.ADMIN_PREVIOUS_USERNAME;
+    if (previousUsername && previousUsername !== adminUsername) {
+      const previousAdmin = await User.findOne({ username: previousUsername, role: 'ADMIN' });
+      if (previousAdmin) {
+        if (adminExists) throw new Error('El nuevo usuario ya está ocupado; migración cancelada.');
+        if (!process.env.ADMIN_PASSWORD) throw new Error('Falta ADMIN_PASSWORD para migrar.');
+        previousAdmin.username = adminUsername;
+        previousAdmin.passwordHash = process.env.ADMIN_PASSWORD;
+        await previousAdmin.save();
+        adminExists = previousAdmin;
+        console.log('[Seed] Credenciales del administrador actualizadas.');
+      } else if (!adminExists || adminExists.role !== 'ADMIN') {
+        throw new Error('No se encontró el administrador esperado; migración cancelada.');
+      }
+    }
 
     if (!adminExists) {
       const admin = new User({
