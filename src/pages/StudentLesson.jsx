@@ -77,6 +77,13 @@ const StudentLesson = () => {
 
   const handleOpenMaterial = async (material) => {
     try {
+      if (material.storageKey) {
+        const res = await apiFetch(`/api/storage/material/${material._id}/link`, {headers:{Authorization:`Bearer ${token}`}});
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'No se pudo abrir el archivo');
+        window.location.assign(data.data.url);
+        return;
+      }
       if (material.fileId) {
         const res = await apiFetch(`/api/student/material/${material._id}/file`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -240,7 +247,7 @@ const StudentLesson = () => {
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      {(mat.url || mat.fileId) && (
+                      {(mat.url || mat.fileId || mat.storageKey) && (
                         <button
                           onClick={() => handleOpenMaterial(mat)}
                           className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-secondary hover:border-secondary text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"

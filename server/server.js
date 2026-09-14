@@ -6,6 +6,7 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import storageRoutes from './routes/storageRoutes.js';
 import { seedInitialData } from './seed.js';
 
 dotenv.config();
@@ -43,6 +44,7 @@ connectDB().then(() => {
 app.use('/api/auth', authRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/storage', storageRoutes);
 
 // Endpoint de verificación de estado
 app.get('/api/health', (req, res) => {

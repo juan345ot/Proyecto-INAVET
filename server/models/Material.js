@@ -27,6 +27,8 @@ const materialSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       default: null,
     },
+    storageKey: { type: String, default: '' },
+    sha256: { type: String, default: '' },
     fileName: {
       type: String,
       trim: true,

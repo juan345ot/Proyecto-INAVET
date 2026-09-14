@@ -1,3 +1,4 @@
+import { deleteStoredMaterial } from './storageRoutes.js';
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import multer from 'multer';
@@ -427,7 +428,8 @@ router.post('/materials', async (req, res) => {
 
 router.put('/materials/:id', async (req, res) => {
   try {
-    const material = await Material.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const {title,type,url,content,order}=req.body;
+    const material = await Material.findByIdAndUpdate(req.params.id, {title,type,url,content,order}, {new:true,runValidators:true});
     res.json({ success: true, data: material });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -436,7 +438,8 @@ router.put('/materials/:id', async (req, res) => {
 
 router.delete('/materials/:id', async (req, res) => {
   try {
-    await Material.findByIdAndDelete(req.params.id);
+    const material=await Material.findById(req.params.id);
+    if (material) {await deleteStoredMaterial(material); await Material.deleteOne({_id:material._id});}
     res.json({ success: true, message: 'Material eliminado' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

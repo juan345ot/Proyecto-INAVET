@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { uploadMaterial, cancelMaterialUpload } from '../lib/materialUpload';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -238,7 +239,12 @@ const AdminDashboard = () => {
   };
 
   // ---------------- GESTIÓN DE MATERIALES ----------------
+  const [storageConfig, setStorageConfig] = useState({enabled:false,maxBytes:20*1024*1024});
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const uploadController = useRef(null);
   const openMaterialModal = (lessonId, mat = null) => {
+    apiFetch('/api/storage/config', {headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json()).then(d=>{if(d.success)setStorageConfig(d.data);}).catch(()=>{});
+    setUploadProgress(0);
     if (mat) {
       setMaterialForm({
         lessonId,
@@ -265,8 +271,8 @@ const AdminDashboard = () => {
     setModalType('MATERIAL');
   };
 
-  const selectMaterialFile = (file) => {
-    if (!file) return;
+  const selectMaterialFile = async (file) => {
+    if (!file || uploadingMaterial) return;
     const allowed = ['pdf', 'ppt', 'pptx', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp', 'gif'];
     const extension = file.name.split('.').pop().toLowerCase();
 
@@ -274,11 +280,15 @@ const AdminDashboard = () => {
       alert('Formato no permitido. Elegí un PDF, PowerPoint, Word o imagen.');
       return;
     }
-    if (file.size > 20 * 1024 * 1024) {
-      alert('El archivo supera el límite de 20 MB.');
+    if (file.size > storageConfig.maxBytes || file.size < 1) {
+      alert(`El archivo supera el límite de ${storageConfig.enabled ? 500 : 20} MB o está vacío.`);
       return;
     }
 
+    if (materialFile && materialFile !== file) {
+      try { await cancelMaterialUpload(materialFile); }
+      catch(error) { alert(error.message); return; }
+    }
     setMaterialFile(file);
     if (!materialForm.title.trim()) {
       setMaterialForm((prev) => ({ ...prev, title: file.name.replace(/\.[^.]+$/, '') }));
@@ -291,6 +301,11 @@ const AdminDashboard = () => {
       setUploadingMaterial(true);
 
       const isNewUploadedFile = !modalData && materialFile;
+      if (isNewUploadedFile && storageConfig.enabled) {
+        uploadController.current = new AbortController();
+        await uploadMaterial(materialFile, materialForm, token, setUploadProgress, uploadController.current.signal);
+        setMaterialFile(null); setModalType(null); fetchAllData(); return;
+      }
       const url = isNewUploadedFile ? '/api/admin/materials/upload' : (modalData ? `/api/admin/materials/${modalData._id}` : '/api/admin/materials');
       const method = modalData ? 'PUT' : 'POST';
       const headers = { Authorization: `Bearer ${token}` };
@@ -316,7 +331,7 @@ const AdminDashboard = () => {
         alert(data.message || 'Error al guardar material');
       }
     } catch (err) {
-      alert('Error de conexión');
+      alert(err.name === 'AbortError' ? 'Subida cancelada.' : err.message || 'Error de conexión');
     } finally {
       setUploadingMaterial(false);
     }
@@ -1331,7 +1346,7 @@ const AdminDashboard = () => {
                       {materialFile ? materialFile.name : 'Arrastrá un archivo aquí o hacé clic para seleccionarlo'}
                     </span>
                     <span className="text-[10px] font-medium text-slate-600">
-                      PDF, PowerPoint, Word o imagen · Máximo 20 MB
+                      PDF, PowerPoint, Word o imagen · Máximo {storageConfig.enabled ? 500 : 20} MB
                     </span>
                     <input
                       type="file"
@@ -1365,10 +1380,11 @@ const AdminDashboard = () => {
                 ></textarea>
               </div>
 
+              {uploadingMaterial && <p role="status" className="text-sm text-slate-700">Subiendo: {uploadProgress}%{uploadProgress === 100 ? " · Verificando y guardando..." : " · No cierres esta ventana."}</p>}
               <div className="pt-4 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setModalType(null)}
+                  onClick={async () => { uploadController.current?.abort(); try { await cancelMaterialUpload(materialFile); setModalType(null); } catch { alert('No se pudo limpiar la subida. Reintentá cancelar.'); } }}
                   className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 cursor-pointer"
                 >
                   Cancelar
