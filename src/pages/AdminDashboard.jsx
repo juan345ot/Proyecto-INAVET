@@ -873,6 +873,16 @@ const AdminDashboard = () => {
                                             </div>
 
                                             <div className="flex items-center gap-2 shrink-0">
+                                              {mat.storageKey && (
+                                                <button type="button" className="text-sky-700 hover:underline text-xs font-bold" onClick={async () => {
+                                                  try {
+                                                    const r = await apiFetch(`/api/storage/material/${mat._id}/link`, {headers:{Authorization:`Bearer ${token}`}});
+                                                    const d = await r.json();
+                                                    if (!r.ok || !d.success) throw new Error(d.message || 'No se pudo descargar');
+                                                    window.location.assign(d.data.url);
+                                                  } catch(error) { alert(error.message); }
+                                                }}>Descargar</button>
+                                              )}
                                               {mat.url && (
                                                 <a
                                                   href={mat.url}

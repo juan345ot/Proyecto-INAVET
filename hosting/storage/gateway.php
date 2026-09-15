@@ -110,6 +110,14 @@ try {
         $used=0;
         foreach(glob($root.'/*/meta.json') as $file) {
             $m=json_decode(file_get_contents($file),true,512,JSON_THROW_ON_ERROR);
+            $candidate=dirname($file);
+            $candidateId=basename($candidate);
+            $candidateState=json_decode(file_get_contents($candidate.'/state.json'),true,512,JSON_THROW_ON_ERROR);
+            // Only expired, unsealed temporary uploads; never a published or sealed file.
+            if(preg_match('/\A[a-f0-9]{32}\z/',$candidateId) && !($m['committed']??false) && !($candidateState['complete']??false) && $m['expires']<time()-86400) {
+                $expiredLock=fopen($candidate.'/lock','c');
+                if($expiredLock && flock($expiredLock,LOCK_EX)) {removeUpload($candidate);flock($expiredLock,LOCK_UN);fclose($expiredLock);continue;}
+            }
             $used+=$m['size'];
             if(!($m['committed']??false) && $m['adminId']===$c['adminId'] && $m['expires']>time()) throw new RuntimeException('Another upload is in progress; retry the same file');
         }
@@ -127,9 +135,9 @@ try {
         if(is_dir($dir)) { $lock=fopen($dir.'/lock','c');flock($lock,LOCK_EX);removeUpload($dir);flock($lock,LOCK_UN);fclose($lock); }
         reply(['deleted'=>true]);
     }
-    $state=$store->seal($c['uploadId']);
     $meta=json_decode(file_get_contents($dir.'/meta.json'),true,512,JSON_THROW_ON_ERROR);
     $meta['mime']=detectMime($dir.'/payload.part',$meta['name']);
+    $state=$store->seal($c['uploadId']);
     if($action==='commit') $meta['committed']=true;
     saveMeta($dir,$meta);
     reply(['size'=>$state['size'],'sha256'=>$state['sha256'],'mime'=>$meta['mime']]);
