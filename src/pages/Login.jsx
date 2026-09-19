@@ -145,14 +145,14 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
+          <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-600">
             <ShieldCheck size={16} className="text-emerald-500" />
             <span>Acceso seguro protegido por INAVET</span>
           </div>
         </div>
 
         <div className="text-center mt-6">
-          <a href="/" className="text-xs font-bold text-secondary hover:text-primary transition-colors">
+          <a href="/" className="text-xs font-bold text-secondary hover:text-sky-700 transition-colors">
             ← Volver al sitio principal
           </a>
         </div>

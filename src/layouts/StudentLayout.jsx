@@ -24,7 +24,7 @@ export const StudentLayout = ({ children }) => {
               <img src={logo} alt="INAVET" className="h-12 object-contain" />
               <div className="hidden sm:flex flex-col">
                 <span className="font-black text-secondary text-lg leading-tight tracking-tight">INAVET</span>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Campus Virtual</span>
+                <span className="text-[10px] uppercase font-bold text-slate-600 tracking-wider">Campus Virtual</span>
               </div>
             </Link>
           </div>
@@ -55,7 +55,7 @@ export const StudentLayout = ({ children }) => {
       </main>
 
       {/* Footer del Aula */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-600">
         <p>© {new Date().getFullYear()} INAVET — Instituto Nacional de Aprendizaje Veterinario. Todos los derechos reservados.</p>
       </footer>
     </div>

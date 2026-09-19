@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 
 const examSchema = new mongoose.Schema(
   {
+    // Optional: final evaluation; legacy lesson associations remain unchanged.
+    moduleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Module', default: null },
     lessonId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Lesson',

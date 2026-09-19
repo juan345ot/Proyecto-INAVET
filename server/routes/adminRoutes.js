@@ -223,7 +223,7 @@ router.delete('/students/:id', async (req, res) => {
 router.get('/curriculum-tree', async (req, res) => {
   try {
     const modules = await Module.find().sort({ order: 1 });
-    const lessons = await Lesson.find().sort({ order: 1 });
+    const lessons = await Lesson.find().sort({ order: 1, createdAt: 1, _id: 1 });
     const materials = await Material.find().sort({ order: 1 });
     const exams = await Exam.find().sort({ title: 1 });
 
@@ -243,6 +243,7 @@ router.get('/curriculum-tree', async (req, res) => {
       return {
         ...m.toObject(),
         lessons: moduleLessons,
+        finalExam: exams.find(ex => ex.moduleId && String(ex.moduleId) === String(m._id)) || null,
       };
     });
 
@@ -268,7 +269,7 @@ router.post('/modules', async (req, res) => {
     const module = await Module.create({
       title,
       description,
-      order: order || 1,
+      order: order ?? 1,
       status: status || 'ACTIVE',
     });
     res.status(201).json({ success: true, data: module });
@@ -279,7 +280,8 @@ router.post('/modules', async (req, res) => {
 
 router.put('/modules/:id', async (req, res) => {
   try {
-    const module = await Module.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const fields = Object.fromEntries(['title', 'description', 'order', 'status'].filter(k => req.body[k] !== undefined).map(k => [k, req.body[k]]));
+    const module = await Module.findByIdAndUpdate(req.params.id, fields, { new: true, runValidators: true });
     res.json({ success: true, data: module });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -308,6 +310,7 @@ router.get('/lessons', async (req, res) => {
 router.post('/lessons', async (req, res) => {
   try {
     const { moduleId, title, description, order, videoUrl, status } = req.body;
+    if (!await Module.exists({ _id: moduleId })) return res.status(400).json({ success: false, message: 'Módulo inexistente' });
     const lesson = await Lesson.create({
       moduleId,
       title,
@@ -324,7 +327,8 @@ router.post('/lessons', async (req, res) => {
 
 router.put('/lessons/:id', async (req, res) => {
   try {
-    const lesson = await Lesson.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const fields = Object.fromEntries(['title', 'description', 'order', 'videoUrl', 'status'].filter(k => req.body[k] !== undefined).map(k => [k, req.body[k]]));
+    const lesson = await Lesson.findByIdAndUpdate(req.params.id, fields, { new: true, runValidators: true });
     res.json({ success: true, data: lesson });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -449,46 +453,45 @@ router.delete('/materials/:id', async (req, res) => {
 // ----------------- GESTIÓN DE EXÁMENES Y PREGUNTAS -----------------
 router.get('/exams', async (req, res) => {
   try {
-    const exams = await Exam.find().populate('lessonId', 'title order').sort({ createdAt: -1 });
+    const exams = await Exam.find().populate('lessonId', 'title order').populate('moduleId', 'title').sort({ createdAt: -1 });
     res.json({ success: true, data: exams });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-router.post('/exams', async (req, res) => {
+// One association per exam; updates are partial for compatibility with the old client.
+async function saveExam(req, res) {
   try {
-    const { lessonId, title, description, passingScorePercent } = req.body;
-    const exam = await Exam.create({
-      lessonId: lessonId || null,
-      title,
-      description,
-      passingScorePercent: passingScorePercent || 70,
-    });
-    res.status(201).json({ success: true, data: exam });
+    const exam = req.params.id ? await Exam.findById(req.params.id) : new Exam();
+    if (!exam) return res.status(404).json({ success: false, message: 'Examen no encontrado' });
+    for (const key of ['title','description','passingScorePercent','status']) {
+      if (req.body[key] !== undefined) exam[key] = req.body[key];
+    }
+    if (req.body.lessonId !== undefined) exam.lessonId = req.body.lessonId || null;
+    if (req.body.moduleId !== undefined) exam.moduleId = req.body.moduleId || null;
+    if (exam.lessonId && exam.moduleId) throw new Error('Elegí una clase o un módulo, no ambos.');
+    if (exam.lessonId && !await Lesson.exists({ _id: exam.lessonId })) throw new Error('Clase inexistente');
+    if (exam.moduleId && !await Module.exists({ _id: exam.moduleId })) throw new Error('Módulo inexistente');
+    const association = exam.moduleId ? { moduleId: exam.moduleId } : exam.lessonId ? { lessonId: exam.lessonId } : null;
+    if (association && await Exam.exists({ ...association, _id: { $ne: exam._id } })) {
+      throw new Error('Ya existe un examen asociado. Editalo o desvinculalo antes de asociar otro.');
+    }
+    await exam.save();
+    res.status(req.params.id ? 200 : 201).json({ success: true, data: exam });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
-});
+}
+router.post('/exams', saveExam);
+router.put('/exams/:id', saveExam);
 
-router.put('/exams/:id', async (req, res) => {
+router.get('/exams/:examId/attempts', async (req, res) => {
   try {
-    const { lessonId, title, description, passingScorePercent, status } = req.body;
-    const exam = await Exam.findByIdAndUpdate(
-      req.params.id,
-      {
-        lessonId: lessonId === '' ? null : lessonId,
-        title,
-        description,
-        passingScorePercent,
-        status,
-      },
-      { new: true }
-    );
-    res.json({ success: true, data: exam });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+    const attempts = await ExamAttempt.find({ examId: req.params.examId })
+      .populate('studentId', 'firstName lastName username').sort({ createdAt: -1 }).limit(100);
+    res.json({ success: true, data: attempts });
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
 router.delete('/exams/:id', async (req, res) => {

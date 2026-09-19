@@ -20,7 +20,7 @@ const lessonSchema = new mongoose.Schema(
     order: {
       type: Number,
       required: true,
-      default: 1, // Orden correlativo global para el desbloqueo secuencial
+      default: 1, // Secuencia interna del módulo, sin dependencia entre módulos
     },
     videoUrl: {
       type: String,

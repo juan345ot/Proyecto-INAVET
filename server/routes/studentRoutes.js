@@ -9,13 +9,15 @@ import Exam from '../models/Exam.js';
 import Question from '../models/Question.js';
 import StudentProgress from '../models/StudentProgress.js';
 import ExamAttempt from '../models/ExamAttempt.js';
-import { canAccessLesson, updateLessonCompletionStatus } from '../services/progressService.js';
+import { canAccessLesson, canAccessExam, getCurriculum, updateLessonCompletionStatus } from '../services/progressService.js';
 
 const router = express.Router();
 
 // Aplica middleware a todas las rutas de alumno
 router.use(protect);
 router.use(requireRole('STUDENT', 'ADMIN'));
+router.use((req, res, next) => req.user.mustChangePassword
+  ? res.status(403).json({ success: false, message: 'Cambiá tu contraseña para acceder al contenido.' }) : next());
 
 // @route   GET /api/student/dashboard
 // @desc    Obtiene visión general del curso para el alumno: módulos, progreso, continuar donde lo dejaste
@@ -23,95 +25,17 @@ router.get('/dashboard', async (req, res) => {
   try {
     const studentId = req.user._id;
 
-    // 1. Obtener módulos activos ordenados
-    const modules = await Module.find({ status: 'ACTIVE' }).sort({ order: 1 });
-
-    // 2. Obtener clases activas ordenadas
-    const lessons = await Lesson.find({ status: 'ACTIVE' }).sort({ order: 1 });
-
-    // 3. Obtener progreso del alumno
-    const progressList = await StudentProgress.find({ studentId });
-    const progressMap = {};
-    progressList.forEach((p) => {
-      progressMap[p.lessonId.toString()] = p;
-    });
-
-    // 4. Determinar estado de cada clase y módulo
-    let completedLessonsCount = 0;
-    let lastVisitedLesson = null;
-    let nextAvailableLesson = null;
-
-    const lessonsWithStatus = [];
-    for (let i = 0; i < lessons.length; i++) {
-      const lesson = lessons[i];
-      const prog = progressMap[lesson._id.toString()];
-
-      let status = 'LOCKED';
-      if (prog && prog.isCompleted) {
-        status = 'COMPLETED';
-        completedLessonsCount++;
-      } else if (i === 0) {
-        status = 'AVAILABLE';
-      } else {
-        const prevLesson = lessons[i - 1];
-        const prevProg = progressMap[prevLesson._id.toString()];
-        if (prevProg && prevProg.isCompleted) {
-          status = 'AVAILABLE';
-        } else {
-          status = 'LOCKED';
-        }
-      }
-
-      if (prog && prog.materialsViewed && prog.materialsViewed.length > 0 && status !== 'COMPLETED') {
-        status = 'IN_PROGRESS';
-      }
-
-      // Detectar la próxima disponible o última visitada
-      if (status !== 'LOCKED' && !nextAvailableLesson && status !== 'COMPLETED') {
-        nextAvailableLesson = lesson;
-      }
-
-      lessonsWithStatus.push({
-        _id: lesson._id,
-        moduleId: lesson.moduleId,
-        title: lesson.title,
-        description: lesson.description,
-        order: lesson.order,
-        status,
-        progress: prog || null,
-      });
-    }
-
-    // Calcular última clase accedida si existe en StudentProgress
-    const recentProgress = await StudentProgress.findOne({ studentId })
-      .sort({ lastAccessedAt: -1 })
-      .populate('lessonId');
-
-    if (recentProgress && recentProgress.lessonId) {
-      lastVisitedLesson = recentProgress.lessonId;
-    }
-
+    const modulesStructured = await getCurriculum(studentId);
+    const lessons = modulesStructured.flatMap(m => m.lessons);
     const totalLessons = lessons.length;
-    const progressPercentage = totalLessons > 0 ? Math.round((completedLessonsCount / totalLessons) * 100) : 0;
-    const isCourseFinished = totalLessons > 0 && completedLessonsCount === totalLessons;
-
-    // Estructurar módulos con sus clases
-    const modulesStructured = modules.map((m) => {
-      const moduleLessons = lessonsWithStatus.filter(
-        (l) => l.moduleId.toString() === m._id.toString()
-      );
-      const isCompleted = moduleLessons.length > 0 && moduleLessons.every((l) => l.status === 'COMPLETED');
-      const isLocked = moduleLessons.length > 0 && moduleLessons.every((l) => l.status === 'LOCKED');
-      
-      return {
-        _id: m._id,
-        title: m.title,
-        description: m.description,
-        order: m.order,
-        status: isCompleted ? 'COMPLETED' : isLocked ? 'LOCKED' : 'IN_PROGRESS',
-        lessons: moduleLessons,
-      };
-    });
+    const completedLessonsCount = lessons.filter(l => l.status === 'COMPLETED').length;
+    const progressPercentage = totalLessons ? Math.round(completedLessonsCount / totalLessons * 100) : 0;
+    const isCourseFinished = modulesStructured.length > 0 && modulesStructured.every(m => m.status === 'COMPLETED');
+    const accessible = lessons.filter(l => l.status !== 'LOCKED');
+    const pending = accessible.filter(l => l.status !== 'COMPLETED');
+    const lastVisitedLesson = [...pending].filter(l => l.progress.lastAccessedAt)
+      .sort((a,b) => new Date(b.progress.lastAccessedAt) - new Date(a.progress.lastAccessedAt))[0];
+    const nextAvailableLesson = pending[0];
 
     res.json({
       success: true,
@@ -121,7 +45,7 @@ router.get('/dashboard', async (req, res) => {
         completedLessonsCount,
         progressPercentage,
         isCourseFinished,
-        continueWhereLeft: lastVisitedLesson || nextAvailableLesson || (lessons[0] || null),
+        continueWhereLeft: lastVisitedLesson || nextAvailableLesson || null,
         modules: modulesStructured,
       },
     });
@@ -171,7 +95,8 @@ router.get('/lesson/:id', async (req, res) => {
         materials,
         examAvailable: !!exam,
         examId: exam ? exam._id : null,
-        progress: progress || { materialsViewed: [], examPassed: false, isCompleted: false },
+        exam: exam ? { title: exam.title, passingScorePercent: exam.passingScorePercent } : null,
+        progress: access.progress,
       },
     });
   } catch (error) {
@@ -232,6 +157,9 @@ router.post('/lesson/:lessonId/material/:materialId/toggle-view', async (req, re
       return res.status(403).json({ success: false, message: access.reason });
     }
 
+    if (!await Material.exists({ _id: materialId, lessonId })) {
+      return res.status(404).json({ success: false, message: 'El material no pertenece a esta clase' });
+    }
     let progress = await StudentProgress.findOne({ studentId, lessonId });
     if (!progress) {
       progress = new StudentProgress({
@@ -275,7 +203,7 @@ router.get('/exam/:examId', async (req, res) => {
     }
 
     // Verificar permiso a la clase dueña del examen
-    const access = await canAccessLesson(studentId, exam.lessonId);
+    const access = await canAccessExam(studentId, exam);
     if (!access.allowed) {
       return res.status(403).json({ success: false, message: access.reason });
     }
@@ -296,6 +224,7 @@ router.get('/exam/:examId', async (req, res) => {
           title: exam.title,
           description: exam.description,
           passingScorePercent: exam.passingScorePercent,
+          moduleId: exam.moduleId || null,
         },
         questions,
         attemptsCount,
@@ -317,6 +246,8 @@ router.post('/exam/:examId/submit', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Examen no disponible' });
     }
 
+    const access = await canAccessExam(studentId, exam);
+    if (!access.allowed) return res.status(403).json({ success: false, message: access.reason });
     const { answers } = req.body; // Array de { questionId, selectedOptionIndex }
     if (!answers || !Array.isArray(answers)) {
       return res.status(400).json({ success: false, message: 'Formato de respuestas inválido' });
@@ -324,11 +255,10 @@ router.post('/exam/:examId/submit', async (req, res) => {
 
     // Obtener preguntas reales con su índice correcto
     const actualQuestions = await Question.find({ examId: exam._id });
-    const questionMap = {};
-    actualQuestions.forEach((q) => {
-      questionMap[q._id.toString()] = q;
-    });
-
+    if (!actualQuestions.length) return res.status(400).json({ success: false, message: 'El examen todavía no tiene preguntas.' });
+    if (answers.some(a => !a || typeof a.questionId !== 'string' || !Number.isInteger(a.selectedOptionIndex))) {
+      return res.status(400).json({ success: false, message: 'Respuestas inválidas' });
+    }
     let correctCount = 0;
     const gradedAnswers = [];
 
@@ -365,7 +295,7 @@ router.post('/exam/:examId/submit', async (req, res) => {
     });
 
     // Si aprobó, actualizar StudentProgress de la clase
-    if (passed) {
+    if (passed && exam.lessonId && !exam.moduleId) {
       let progress = await StudentProgress.findOne({ studentId, lessonId: exam.lessonId });
       if (!progress) {
         progress = new StudentProgress({

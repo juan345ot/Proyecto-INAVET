@@ -1,88 +1,65 @@
+import mongoose from 'mongoose';
 import Lesson from '../models/Lesson.js';
+import Module from '../models/Module.js';
+import User from '../models/User.js';
 import Material from '../models/Material.js';
+import Exam from '../models/Exam.js';
+import ExamAttempt from '../models/ExamAttempt.js';
 import StudentProgress from '../models/StudentProgress.js';
+import { evaluateCurriculum, idOf } from './curriculumRules.js';
 
-/**
- * Verifica si un alumno tiene autorización para acceder a una clase determinada.
- * Regla de negocio INAVET:
- * - Si es la primera clase activa (menor orden), tiene acceso automático.
- * - Si es una clase posterior, debe haber completado la clase previa activa
- *   (todos los materiales vistos + examen aprobado).
- */
-export const canAccessLesson = async (studentId, lessonId) => {
-  const targetLesson = await Lesson.findById(lessonId);
-  if (!targetLesson || targetLesson.status !== 'ACTIVE') {
-    return { allowed: false, reason: 'Clase no encontrada o inactiva' };
-  }
+export async function getCurriculum(studentId, moduleId) {
+  const modules = await Module.find({ status: 'ACTIVE', ...(moduleId ? { _id: moduleId } : {}) }).lean();
+  const lessons = await Lesson.find({ status: 'ACTIVE', moduleId: { $in: modules.map(m => m._id) } }).lean();
+  const lessonIds = lessons.map(l => l._id);
+  const [materials, exams, progress] = await Promise.all([
+    Material.find({ lessonId: { $in: lessonIds } }).select('_id lessonId required').lean(),
+    Exam.find({ $or: [{ lessonId: { $in: lessonIds } }, { moduleId: { $in: modules.map(m => m._id) } }] }).lean(),
+    StudentProgress.find({ studentId, lessonId: { $in: lessonIds } }).lean(),
+  ]);
+  const attempts = await ExamAttempt.find({ studentId, examId: { $in: exams.map(e => e._id) } }).select('examId passed').lean();
+  return evaluateCurriculum({ modules, lessons, materials, exams, progress, attempts });
+}
 
-  // Obtenemos todas las clases activas ordenadas ascendentemente
-  const activeLessons = await Lesson.find({ status: 'ACTIVE' }).sort({ order: 1, createdAt: 1 });
+async function activeStudent(studentId) {
+  if (!mongoose.isValidObjectId(studentId)) return false;
+  const user = await User.findById(studentId).select('status role mustChangePassword').lean();
+  return !!user && user.status === 'ACTIVE' && ['STUDENT', 'ADMIN'].includes(user.role) && !user.mustChangePassword;
+}
 
-  const targetIndex = activeLessons.findIndex(
-    (l) => l._id.toString() === targetLesson._id.toString()
-  );
+export async function canAccessLesson(studentId, lessonId) {
+  if (!await activeStudent(studentId)) return { allowed: false, reason: 'Cuenta no autorizada o cambio de contraseña pendiente' };
+  if (!mongoose.isValidObjectId(lessonId)) return { allowed: false, reason: 'Clase inválida' };
+  const lesson = await Lesson.findById(lessonId).lean();
+  if (!lesson || lesson.status !== 'ACTIVE') return { allowed: false, reason: 'Clase no encontrada o inactiva' };
+  const [module] = await getCurriculum(studentId, lesson.moduleId);
+  if (!module) return { allowed: false, reason: 'Módulo no disponible' };
+  const row = module.lessons.find(l => idOf(l) === idOf(lesson));
+  if (!row || row.status === 'LOCKED') return { allowed: false, reason: 'Completá los materiales y aprobá los exámenes de las clases anteriores de este módulo.' };
+  return { allowed: true, lesson, progress: row.progress };
+}
 
-  if (targetIndex === -1) {
-    return { allowed: false, reason: 'La clase no pertenece al plan activo' };
-  }
+export async function canAccessExam(studentId, exam) {
+  if (!exam || exam.status !== 'ACTIVE') return { allowed: false, reason: 'Examen no disponible' };
+  if (!exam.moduleId) return canAccessLesson(studentId, exam.lessonId);
+  if (exam.lessonId || !await activeStudent(studentId)) return { allowed: false, reason: 'Acceso denegado' };
+  const [module] = await getCurriculum(studentId, exam.moduleId);
+  const final = module?.finalExam;
+  return final && idOf(final) === idOf(exam) && final.status !== 'LOCKED'
+    ? { allowed: true }
+    : { allowed: false, reason: 'Completá todas las clases de este módulo para realizar su validación final.' };
+}
 
-  // Primera clase: siempre accesible para alumnos activos
-  if (targetIndex === 0) {
-    return { allowed: true, lesson: targetLesson };
-  }
-
-  // Revisar que la clase anterior inmediata esté completada
-  const previousLesson = activeLessons[targetIndex - 1];
-  const prevProgress = await StudentProgress.findOne({
-    studentId,
-    lessonId: previousLesson._id,
-  });
-
-  if (!prevProgress || !prevProgress.isCompleted) {
-    return {
-      allowed: false,
-      reason: `Esta clase todavía está bloqueada. Completá y aprobá la clase anterior ("${previousLesson.title}") para continuar.`,
-      previousLessonId: previousLesson._id,
-    };
-  }
-
-  return { allowed: true, lesson: targetLesson };
-};
-
-/**
- * Evalúa y actualiza si una clase pasa al estado COMPLETED para un alumno:
- * Requiere:
- * 1. Todos los materiales de la clase marcados como vistos
- * 2. Examen de la clase aprobado (si la clase cuenta con examen)
- */
-export const updateLessonCompletionStatus = async (studentId, lessonId) => {
-  const totalMaterialsCount = await Material.countDocuments({ lessonId });
-  let progress = await StudentProgress.findOne({ studentId, lessonId });
-
-  if (!progress) {
-    progress = new StudentProgress({
-      studentId,
-      lessonId,
-      materialsViewed: [],
-      examPassed: false,
-      isCompleted: false,
-    });
-  }
-
-  const viewedCount = progress.materialsViewed ? progress.materialsViewed.length : 0;
-  const materialsDone = totalMaterialsCount === 0 || viewedCount >= totalMaterialsCount;
-  const examDone = progress.examPassed;
-
-  if (materialsDone && examDone) {
-    if (!progress.isCompleted) {
-      progress.isCompleted = true;
-      progress.completedAt = new Date();
-    }
-  } else {
-    progress.isCompleted = false;
-  }
-
+export async function updateLessonCompletionStatus(studentId, lessonId) {
+  const lesson = await Lesson.findById(lessonId).lean();
+  if (!lesson) throw new Error('Clase no encontrada');
+  const [module] = await getCurriculum(studentId, lesson.moduleId);
+  const row = module?.lessons.find(l => idOf(l) === idOf(lesson));
+  const progress = await StudentProgress.findOne({ studentId, lessonId }) || new StudentProgress({ studentId, lessonId });
+  progress.examPassed = !!row?.progress.examPassed;
+  progress.isCompleted = row?.status === 'COMPLETED';
+  progress.completedAt = progress.isCompleted ? (progress.completedAt || new Date()) : null;
   progress.lastAccessedAt = new Date();
   await progress.save();
   return progress;
-};
+}

@@ -71,7 +71,7 @@ const StudentHome = () => {
     <StudentLayout>
       <div className="space-y-10">
         {/* Banner de Bienvenida y Progreso General */}
-        <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-secondary to-[#8c52be] p-8 md:p-10 text-white shadow-xl shadow-secondary/15">
+        <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-secondary to-[#75409c] p-6 sm:p-8 md:p-10 text-white shadow-xl shadow-secondary/15">
           <div className="relative z-10 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold uppercase tracking-wider mb-4 border border-white/20">
               <Sparkles size={14} className="text-primary" />
@@ -88,8 +88,8 @@ const StudentHome = () => {
             {/* Barra de Progreso */}
             <div className="mt-8 bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/15">
               <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider mb-2">
-                <span>Progreso del Curso</span>
-                <span className="text-primary font-black text-sm">{progressPercentage}%</span>
+                <span>Progreso de clases</span>
+                <span className="text-white font-black text-sm">{progressPercentage}%</span>
               </div>
               <div className="w-full h-3.5 bg-black/20 rounded-full overflow-hidden p-0.5">
                 <div
@@ -97,16 +97,17 @@ const StudentHome = () => {
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-slate-200 mt-3 font-semibold">
+              <p className="text-xs text-white mt-3 font-semibold">
                 {completedLessonsCount} de {totalLessons} clases completadas
               </p>
+              {totalLessons > 0 && completedLessonsCount === totalLessons && !isCourseFinished && <p className="text-xs text-white mt-2">Faltan las validaciones finales para completar el curso.</p>}
             </div>
           </div>
         </div>
 
         {/* Notificación de Curso Finalizado */}
         {isCourseFinished && (
-          <div className="bg-emerald-500 text-white p-6 md:p-8 rounded-3xl shadow-lg flex items-center gap-5">
+          <div className="bg-emerald-800 text-white p-6 md:p-8 rounded-3xl shadow-lg flex flex-wrap items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
               <Award size={32} />
             </div>
@@ -124,7 +125,7 @@ const StudentHome = () => {
           <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/60">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="space-y-1">
-                <span className="text-xs font-black uppercase tracking-widest text-primary">
+                <span className="text-xs font-black uppercase tracking-widest text-sky-700">
                   Continuar donde lo dejaste
                 </span>
                 <h3 className="text-xl md:text-2xl font-black text-slate-800">
@@ -153,17 +154,14 @@ const StudentHome = () => {
           </h2>
 
           <div className="space-y-6">
-            {modules.map((mod, modIdx) => (
+            {modules.map((mod) => (
               <div
                 key={mod._id}
-                className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs"
+                className="bg-slate-100 rounded-3xl border border-slate-300/70 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
                 {/* Cabecera del Módulo */}
-                <div className="p-6 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between">
+                <div className="p-4 sm:p-6 bg-slate-100 border-b border-slate-200 flex flex-wrap gap-3 items-center justify-between">
                   <div>
-                    <span className="text-xs font-black uppercase tracking-wider text-secondary">
-                      Módulo {mod.order || modIdx + 1}
-                    </span>
                     <h3 className="text-lg font-black text-slate-800 mt-0.5">
                       {mod.title}
                     </h3>
@@ -182,11 +180,12 @@ const StudentHome = () => {
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 text-slate-800 text-xs font-bold border border-primary/30">
-                      En Curso
+                      {mod.status === 'AVAILABLE' ? 'Disponible' : 'En curso'}
                     </span>
                   )}
                 </div>
 
+                <p className="px-4 sm:px-6 py-3 text-xs text-slate-600">Podés comenzar este módulo sin completar otros. Sus clases se realizan en secuencia.</p>
                 {/* Listado de Clases */}
                 <div className="divide-y divide-slate-100">
                   {mod.lessons.map((lesson) => {
@@ -196,10 +195,10 @@ const StudentHome = () => {
                     return (
                       <div
                         key={lesson._id}
-                        className={`p-5 flex items-center justify-between gap-4 transition-colors ${
+                        className={`p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 transition-colors ${
                           isLocked
-                            ? 'bg-slate-50/40 text-slate-400 cursor-not-allowed'
-                            : 'hover:bg-slate-50/80 text-slate-800'
+                            ? 'bg-slate-50 text-slate-600 cursor-not-allowed'
+                            : 'bg-white hover:bg-slate-50 text-slate-800'
                         }`}
                       >
                         <div className="flex items-center gap-4 min-w-0">
@@ -208,7 +207,7 @@ const StudentHome = () => {
                               isCompleted
                                 ? 'bg-emerald-100 text-emerald-600'
                                 : isLocked
-                                ? 'bg-slate-100 text-slate-400'
+                                ? 'bg-slate-100 text-slate-600'
                                 : 'bg-primary/20 text-secondary font-black'
                             }`}
                           >
@@ -223,14 +222,15 @@ const StudentHome = () => {
 
                           <div className="min-w-0">
                             <h4
-                              className={`text-sm font-bold truncate ${
-                                isLocked ? 'text-slate-400' : 'text-slate-800'
+                              className={`text-sm font-bold break-words ${
+                                isLocked ? 'text-slate-600' : 'text-slate-800'
                               }`}
                             >
                               {lesson.title}
                             </h4>
+                            <p className="text-xs mt-1 text-slate-600">{{ LOCKED: 'Bloqueada', AVAILABLE: 'Disponible', IN_PROGRESS: 'En curso', COMPLETED: 'Completada' }[lesson.status]}</p>
                             {lesson.description && (
-                              <p className="text-xs text-slate-400 truncate mt-0.5">
+                              <p className="text-xs text-slate-600 truncate mt-0.5">
                                 {lesson.description}
                               </p>
                             )}
@@ -239,7 +239,7 @@ const StudentHome = () => {
 
                         <div>
                           {isLocked ? (
-                            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
                               <Lock size={12} /> Bloqueada
                             </span>
                           ) : (
@@ -259,6 +259,17 @@ const StudentHome = () => {
                       </div>
                     );
                   })}
+                </div>
+                <div className="p-4 sm:p-6 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-slate-800">Validación final</h4>
+                    <p className="text-sm text-slate-600 break-words">{mod.finalExam?.title || 'El administrador todavía no publicó la validación final.'}</p>
+                  </div>
+                  {mod.finalExam && (mod.finalExam.status === 'LOCKED'
+                    ? <span className="text-xs font-bold text-slate-600">Bloqueada: completá todas las clases</span>
+                    : <Link to={`/aula/examen/${mod.finalExam._id}`} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold">
+                        {mod.finalExam.status === 'COMPLETED' ? 'Aprobada · Ver evaluación' : 'Realizar validación final'}
+                      </Link>)}
                 </div>
               </div>
             ))}

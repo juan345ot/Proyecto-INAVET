@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { StudentLayout } from '../layouts/StudentLayout';
+import { apiFetch } from '../lib/api';
 import {
   Award,
   CheckCircle2,
@@ -28,7 +29,10 @@ const StudentExam = () => {
     const fetchExam = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/student/exam/${examId}`, {
+        setError('');
+        setResult(null);
+        setSelectedAnswers({});
+        const res = await apiFetch(`/api/student/exam/${examId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const resData = await res.json();
@@ -72,7 +76,7 @@ const StudentExam = () => {
         selectedOptionIndex: selectedAnswers[qId],
       }));
 
-      const res = await fetch(`/api/student/exam/${examId}/submit`, {
+      const res = await apiFetch(`/api/student/exam/${examId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,6 +88,7 @@ const StudentExam = () => {
       const resData = await res.json();
       if (resData.success) {
         setResult(resData.data);
+        setData(prev => ({ ...prev, attemptsCount: resData.data.attemptNumber, lastAttempt: resData.data }));
       } else {
         alert(resData.message || 'Error al procesar el examen');
       }
@@ -130,14 +135,14 @@ const StudentExam = () => {
       <div className="max-w-3xl mx-auto space-y-8">
         <Link
           to="/aula"
-          className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400 hover:text-secondary transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-600 hover:text-secondary transition-colors"
         >
           <ArrowLeft size={16} /> Volver a mis clases
         </Link>
 
         {/* Encabezado del Examen */}
         <div className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-xs space-y-3">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <span className="text-xs font-black uppercase tracking-widest text-secondary">
               Evaluación Online
             </span>
@@ -146,6 +151,9 @@ const StudentExam = () => {
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-slate-900">{exam.title}</h1>
+          <p className="text-sm text-slate-600">Intentos realizados: {attemptsCount}. Intentos ilimitados.
+            {lastAttempt && ` Último resultado: ${lastAttempt.percentage}% (${lastAttempt.passed ? 'aprobado' : 'no aprobado'}).`}
+          </p>
           {exam.description && <p className="text-sm text-slate-500">{exam.description}</p>}
         </div>
 
@@ -175,7 +183,7 @@ const StudentExam = () => {
             </h2>
             <p className="text-sm font-medium">{result.message}</p>
 
-            <div className="inline-flex items-center gap-6 py-3 px-6 bg-white/80 rounded-2xl border border-black/5 text-sm font-bold">
+            <div className="inline-flex flex-wrap justify-center items-center gap-3 sm:gap-6 py-3 px-6 bg-white/80 rounded-2xl border border-black/5 text-sm font-bold">
               <span>Aciertos: {result.score} de {result.totalQuestions}</span>
               <span>Calificación: {result.percentage}%</span>
             </div>
@@ -186,7 +194,7 @@ const StudentExam = () => {
                   to="/aula"
                   className="w-full sm:w-auto px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-lg transition-all"
                 >
-                  Continuar a la siguiente clase
+                  Volver al aula y ver mi progreso
                 </Link>
               ) : (
                 <button
@@ -210,7 +218,7 @@ const StudentExam = () => {
                 className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/80 shadow-xs space-y-4"
               >
                 <h3 className="text-base font-bold text-slate-800 leading-snug">
-                  <span className="text-primary font-black mr-2">{qIndex + 1}.</span>
+                  <span className="text-sky-700 font-black mr-2">{qIndex + 1}.</span>
                   {q.prompt}
                 </h3>
 
@@ -221,13 +229,13 @@ const StudentExam = () => {
                     return (
                       <label
                         key={optIdx}
-                        onClick={() => handleSelectOption(q._id, optIdx)}
-                        className={`p-4 rounded-2xl border flex items-center justify-between gap-3 cursor-pointer transition-all ${
+                        className={`p-4 rounded-2xl border flex items-center justify-between gap-3 cursor-pointer transition-all focus-within:ring-2 focus-within:ring-secondary ${
                           isSelected
                             ? 'bg-primary/10 border-primary text-secondary font-bold shadow-xs'
                             : 'bg-slate-50/70 border-slate-200/80 text-slate-700 hover:bg-slate-100/70'
                         }`}
                       >
+                        <input type="radio" name={`question-${q._id}`} value={optIdx} checked={isSelected} onChange={() => handleSelectOption(q._id, optIdx)} className="sr-only" />
                         <span className="text-sm">{option}</span>
                         <div
                           className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${

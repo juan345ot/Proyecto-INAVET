@@ -145,7 +145,7 @@ const StudentLesson = () => {
     );
   }
 
-  const { lesson, materials, examAvailable, examId, progress } = lessonData;
+  const { lesson, materials, examAvailable, examId, exam, progress } = lessonData;
   const youtubeEmbed = getEmbedYoutubeUrl(lesson.videoUrl);
   const isLessonComplete = progress?.isCompleted;
 
@@ -156,16 +156,13 @@ const StudentLesson = () => {
         <div className="space-y-3">
           <Link
             to="/aula"
-            className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400 hover:text-secondary transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-600 hover:text-secondary transition-colors"
           >
             <ArrowLeft size={16} /> Volver al Inicio
           </Link>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <span className="text-xs font-black uppercase tracking-widest text-primary">
-                Clase {lesson.order}
-              </span>
               <h1 className="text-2xl md:text-3xl font-black text-slate-900 mt-1">
                 {lesson.title}
               </h1>
@@ -198,18 +195,18 @@ const StudentLesson = () => {
 
         {/* Sección de Materiales y Recursos */}
         <div className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-8 shadow-xs space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
             <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
               <BookOpen size={22} className="text-secondary" />
               <span>Materiales de la Clase</span>
             </h2>
-            <span className="text-xs text-slate-400 font-medium">
+            <span className="text-xs text-slate-600 font-medium">
               Marcá como visto cada recurso estudiado
             </span>
           </div>
 
           {materials.length === 0 ? (
-            <p className="text-sm text-slate-400 italic">No hay archivos adjuntos en esta clase.</p>
+            <p className="text-sm text-slate-600 italic">No hay archivos adjuntos en esta clase.</p>
           ) : (
             <div className="space-y-3">
               {materials.map((mat) => {
@@ -218,7 +215,7 @@ const StudentLesson = () => {
                 return (
                   <div
                     key={mat._id}
-                    className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-4 ${
+                    className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-4 ${
                       isViewed
                         ? 'bg-emerald-50/50 border-emerald-200/80 text-slate-800'
                         : 'bg-slate-50 border-slate-200/70 text-slate-700 hover:border-primary/40'
@@ -234,9 +231,9 @@ const StudentLesson = () => {
                       </div>
 
                       <div className="min-w-0">
-                        <h4 className="text-sm font-bold truncate">{mat.title}</h4>
+                        <h4 className="text-sm font-bold break-words">{mat.title}</h4>
                         <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-200/60 text-slate-600">
-                          {mat.type}
+                          {{ PDF: 'PDF', PPT: 'PowerPoint', DOC: 'Word', IMAGE: 'Imagen', LINK: 'Enlace', TEXT: 'Apunte' }[mat.type] || mat.type}
                         </span>
                         {mat.content && (
                           <p className="text-xs text-slate-600 mt-2 whitespace-pre-line bg-white p-3 rounded-xl border border-slate-100">
@@ -262,7 +259,7 @@ const StudentLesson = () => {
                         disabled={togglingMaterialId === mat._id}
                         className={`px-4 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                           isViewed
-                            ? 'bg-emerald-600 text-white shadow-xs'
+                            ? 'bg-emerald-700 text-white shadow-xs'
                             : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
                         }`}
                       >
@@ -294,16 +291,16 @@ const StudentLesson = () => {
                 Evaluación de Conocimiento
               </span>
               <h3 className="text-xl font-black text-slate-800">
-                Examen de la Clase {lesson.order}
+                {exam?.title || 'Examen de esta clase'}
               </h3>
               <p className="text-sm text-slate-500">
-                Aprobá el examen con al menos 70% para desbloquear la siguiente clase del curso.
+                Aprobá el examen{exam ? ` con al menos ${exam.passingScorePercent}%` : ''} y marcá todos los materiales obligatorios como vistos para completar esta clase y avanzar dentro del módulo.
               </p>
             </div>
 
             <div className="shrink-0 flex items-center gap-3">
               {progress?.examPassed ? (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-100 text-emerald-800 font-bold text-xs uppercase tracking-wider">
                     <CheckCircle2 size={16} /> Aprobado
                   </span>
@@ -326,6 +323,7 @@ const StudentLesson = () => {
             </div>
           </div>
         )}
+        {!examAvailable && <p className="p-5 rounded-2xl bg-slate-100 border border-slate-200 text-sm text-slate-700">El administrador todavía no publicó el examen de esta clase. Podés estudiar sus materiales, pero el examen es necesario para completarla.</p>}
       </div>
     </StudentLayout>
   );

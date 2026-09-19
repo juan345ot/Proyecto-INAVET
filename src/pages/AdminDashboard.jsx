@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { apiFetch } from '../lib/api';
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('modulos'); // 'modulos' | 'examenes' | 'alumnos'
@@ -53,6 +54,17 @@ const AdminDashboard = () => {
   const [questionForm, setQuestionForm] = useState({ examId: '', prompt: '', options: ['', '', '', ''], correctOptionIndex: 0 });
   const [examQuestions, setExamQuestions] = useState([]);
   const [selectedExamForQuestions, setSelectedExamForQuestions] = useState(null);
+  const [examResults, setExamResults] = useState([]);
+  const openExamResults = async (exam) => {
+    try {
+      const res = await apiFetch(`/api/admin/exams/${exam._id}/attempts`, { headers: { Authorization: `Bearer ${token}` } });
+      const result = await res.json();
+      if (!res.ok || !result.success) throw new Error(result.message || 'No se pudieron consultar los resultados');
+      setExamResults(result.data);
+      setModalData(exam);
+      setModalType('RESULTS');
+    } catch (error) { alert(error.message); }
+  };
 
   // Alumnos
   const [studentForm, setStudentForm] = useState({ firstName: '', lastName: '', dni: '', email: '', phone: '', username: '', password: '', status: 'ACTIVE' });
@@ -110,10 +122,10 @@ const AdminDashboard = () => {
   // ---------------- GESTIÓN DE MÓDULOS ----------------
   const openModuleModal = (mod = null) => {
     if (mod) {
-      setModuleForm({ title: mod.title, description: mod.description || '', order: mod.order || 1 });
+      setModuleForm({ title: mod.title, description: mod.description || '', order: mod.order ?? 1, status: mod.status });
       setModalData(mod);
     } else {
-      setModuleForm({ title: '', description: '', order: curriculum.length + 1 });
+      setModuleForm({ title: '', description: '', order: curriculum.length + 1, status: 'ACTIVE' });
       setModalData(null);
     }
     setModalType('MODULE');
@@ -164,22 +176,21 @@ const AdminDashboard = () => {
         moduleId,
         title: lesson.title,
         description: lesson.description || '',
-        order: lesson.order || 1,
+        order: lesson.order ?? 1, status: lesson.status,
         videoUrl: lesson.videoUrl || '',
         examId: lesson.exam ? lesson.exam._id : '',
       });
       setModalData(lesson);
     } else {
       // Calcular siguiente orden sugerido
-      let totalLessons = 0;
-      curriculum.forEach((m) => {
-        totalLessons += (m.lessons || []).length;
-      });
+      const siblings = curriculum.find(m => m._id === moduleId)?.lessons || [];
+      const nextOrder = Math.max(0, ...siblings.map(l => l.order)) + 1;
       setLessonForm({
         moduleId,
         title: '',
         description: '',
-        order: totalLessons + 1,
+        order: nextOrder,
+        status: 'ACTIVE',
         videoUrl: '',
         examId: '',
       });
@@ -204,13 +215,20 @@ const AdminDashboard = () => {
       if (data.success) {
         const savedLessonId = modalData ? modalData._id : data.data._id;
 
-        // Si se seleccionó un examen para asociar a esta clase
+        // Preserve titles and exam history; explicitly detach the previous association.
+        if (modalData?.exam && modalData.exam._id !== lessonForm.examId) {
+          const previous = await apiFetch(`/api/admin/exams/${modalData.exam._id}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ lessonId: null }),
+          }).then(r => r.json());
+          if (!previous.success) throw new Error(previous.message);
+        }
         if (lessonForm.examId) {
-          await apiFetch(`/api/admin/exams/${lessonForm.examId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ lessonId: savedLessonId }),
-          });
+          const association = await apiFetch(`/api/admin/exams/${lessonForm.examId}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ lessonId: savedLessonId, moduleId: null }),
+          }).then(r => r.json());
+          if (!association.success) throw new Error(association.message);
         }
 
         setModalType(null);
@@ -352,12 +370,14 @@ const AdminDashboard = () => {
   };
 
   // ---------------- GESTIÓN DE EXÁMENES ----------------
-  const openExamModal = (exam = null) => {
+  const openExamModal = (exam = null, moduleId = '') => {
     if (exam) {
       setExamForm({
         title: exam.title,
         description: exam.description || '',
-        passingScorePercent: exam.passingScorePercent || 70,
+        passingScorePercent: exam.passingScorePercent ?? 70,
+        moduleId: exam.moduleId ? (exam.moduleId._id || exam.moduleId) : '',
+        status: exam.status || 'ACTIVE',
         lessonId: exam.lessonId ? (exam.lessonId._id || exam.lessonId) : '',
       });
       setModalData(exam);
@@ -366,6 +386,8 @@ const AdminDashboard = () => {
         title: '',
         description: '',
         passingScorePercent: 70,
+        moduleId,
+        status: 'ACTIVE',
         lessonId: '',
       });
       setModalData(null);
@@ -597,11 +619,11 @@ const AdminDashboard = () => {
       {/* Header Admin */}
       <header className="bg-slate-900 text-white sticky top-0 z-40 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <img src={logo} alt="INAVET" className="h-12 object-contain" />
-            <div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1">
               <span className="font-black text-primary text-lg tracking-tight">INAVET</span>
-              <span className="ml-2 text-xs uppercase font-black bg-secondary/90 text-white px-3 py-1 rounded-full">
+              <span className="text-[10px] sm:text-xs uppercase font-black bg-secondary/90 text-white px-2 sm:px-3 py-1 rounded-full">
                 Panel Administrativo
               </span>
             </div>
@@ -627,11 +649,11 @@ const AdminDashboard = () => {
 
       {/* Selector de Pestañas */}
       <div className="bg-white border-b border-slate-200 shadow-xs sticky top-20 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-2 py-3 overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 py-3 overflow-x-auto">
           {[
-            { id: 'modulos', label: 'Gestión de Curso (Módulos, Clases y Materiales)', icon: Layers },
-            { id: 'examenes', label: 'Banco de Exámenes y Preguntas', icon: Award },
-            { id: 'alumnos', label: 'Gestión de Alumnos', icon: Users },
+            { id: 'modulos', label: 'Gestión de Curso (Módulos, Clases y Materiales)', shortLabel: 'Curso', icon: Layers },
+            { id: 'examenes', label: 'Banco de Exámenes y Preguntas', shortLabel: 'Exámenes', icon: Award },
+            { id: 'alumnos', label: 'Gestión de Alumnos', shortLabel: 'Alumnos', icon: Users },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -639,14 +661,17 @@ const AdminDashboard = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 shrink-0 transition-all cursor-pointer ${
+                aria-label={tab.label}
+                aria-pressed={active}
+                className={`px-2 lg:px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 lg:gap-2 flex-1 lg:flex-none shrink-0 transition-all cursor-pointer ${
                   active
                     ? 'bg-secondary text-white shadow-lg shadow-secondary/25'
                     : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
                 <Icon size={18} />
-                <span>{tab.label}</span>
+                <span className="hidden lg:inline">{tab.label}</span>
+                <span className="lg:hidden">{tab.shortLabel}</span>
               </button>
             );
           })}
@@ -661,14 +686,14 @@ const AdminDashboard = () => {
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
               <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Alumnos</span>
               <p className="text-2xl font-black text-slate-800 mt-1">{stats.totalStudents}</p>
-              <span className="text-xs text-emerald-600 font-bold">{stats.activeStudents} activos</span>
+              <span className="text-xs text-emerald-700 font-bold">{stats.activeStudents} {stats.activeStudents === 1 ? 'activo' : 'activos'}</span>
             </div>
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
               <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Módulos</span>
               <p className="text-2xl font-black text-slate-800 mt-1">{curriculum.length}</p>
             </div>
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Clases Activas</span>
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Clases creadas</span>
               <p className="text-2xl font-black text-slate-800 mt-1">{stats.totalLessons}</p>
             </div>
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
@@ -708,27 +733,27 @@ const AdminDashboard = () => {
                 return (
                   <div
                     key={mod._id}
-                    className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden transition-all"
+                    className="bg-slate-100 rounded-3xl border border-slate-300/70 shadow-sm overflow-hidden transition-shadow hover:shadow-md"
                   >
                     {/* Fila Cabecera del Módulo */}
-                    <div className="p-6 bg-slate-50/80 border-b border-slate-200/80 flex items-center justify-between gap-4">
+                    <div className="p-4 sm:p-6 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
                       <div
                         onClick={() => toggleModule(mod._id)}
-                        className="flex items-center gap-3 cursor-pointer flex-1 min-w-0 select-none"
+                        className="flex items-center gap-3 cursor-pointer w-full sm:w-auto sm:flex-1 min-w-0 select-none"
                       >
-                        <button className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-xs">
+                        <button aria-label={`Desplegar ${mod.title}`} aria-expanded={isExpanded} className="w-8 h-8 shrink-0 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-xs">
                           {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                         </button>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-black uppercase text-secondary tracking-wider">
-                              Módulo {mod.order}
+                              {mod.status === 'ACTIVE' ? 'Publicado' : 'Inactivo'}
                             </span>
                             <span className="text-[11px] font-bold text-slate-600">
-                              ({(mod.lessons || []).length} clases)
+                              ({(mod.lessons || []).length} {(mod.lessons || []).length === 1 ? 'clase' : 'clases'})
                             </span>
                           </div>
-                          <h3 className="text-base font-black text-slate-800 truncate mt-0.5">
+                          <h3 className="text-base font-black text-slate-800 break-words mt-0.5">
                             {mod.title}
                           </h3>
                         </div>
@@ -762,33 +787,43 @@ const AdminDashboard = () => {
 
                     {/* Contenido Desplegable: Clases del Módulo */}
                     {isExpanded && (
-                      <div className="p-6 space-y-4">
+                      <div className="p-4 sm:p-6 space-y-4">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3">
+                          <div className="text-sm text-slate-700">
+                            <p className="font-bold">Validación final</p>
+                            <p>{mod.finalExam ? mod.finalExam.title + (mod.finalExam.status === 'ACTIVE' ? ' · Activa' : ' · Inactiva') : 'Pendiente de configurar'}</p>
+                          </div>
+                          <button onClick={() => openExamModal(mod.finalExam, mod._id)} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold">
+                            {mod.finalExam ? 'Editar validación final' : 'Crear validación final'}
+                          </button>
+                          {mod.finalExam && <button onClick={() => openQuestionsManager(mod.finalExam)} className="text-secondary font-bold text-xs">Preguntas de la validación</button>}
+                        </div>
                         {(mod.lessons || []).length === 0 ? (
                           <div className="text-center py-6 text-slate-600 text-xs italic bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                             No hay clases creadas en este módulo aún. Hacé clic en "Agregar Clase".
                           </div>
                         ) : (
-                          mod.lessons.map((lesson) => {
+                          mod.lessons.map((lesson, lessonIndex) => {
                             const isLessonExp = !!expandedLessons[lesson._id];
 
                             return (
                               <div
                                 key={lesson._id}
-                                className="bg-slate-50/50 rounded-2xl border border-slate-200 p-5 space-y-4"
+                                className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 space-y-4"
                               >
                                 {/* Fila de la Clase */}
-                                <div className="flex items-center justify-between gap-4">
+                                <div className="flex flex-wrap items-center justify-between gap-4">
                                   <div
                                     onClick={() => toggleLesson(lesson._id)}
-                                    className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
+                                    className="flex items-center gap-3 cursor-pointer w-full sm:w-auto sm:flex-1 min-w-0"
                                   >
-                                    <button className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600">
+                                    <button aria-label={`Desplegar ${lesson.title}`} aria-expanded={isLessonExp} className="w-7 h-7 shrink-0 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600">
                                       {isLessonExp ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                                     </button>
                                     <div className="min-w-0">
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex flex-wrap items-center gap-2">
                                         <span className="text-[11px] font-black uppercase text-sky-700 tracking-wider">
-                                          Clase {lesson.order} (Orden correlativo)
+                                          {lesson.status === 'ACTIVE' ? 'Publicada' : 'Inactiva'}
                                         </span>
                                         {lesson.videoUrl && (
                                           <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-rose-50 text-rose-600 px-2 py-0.5 rounded-md border border-rose-200">
@@ -801,9 +836,12 @@ const AdminDashboard = () => {
                                           </span>
                                         )}
                                       </div>
-                                      <h4 className="text-sm font-bold text-slate-800 truncate mt-0.5">
+                                      <h4 className="text-sm font-bold text-slate-800 break-words mt-0.5">
                                         {lesson.title}
                                       </h4>
+                                      <p className="mt-1 text-xs text-slate-600 break-words">
+                                        {lesson.status !== 'ACTIVE' ? 'Clase inactiva: no participa de la secuencia.' : <>Anterior: {mod.lessons.slice(0, lessonIndex).filter(l => l.status === 'ACTIVE').at(-1)?.title || 'Inicio del módulo'} · Siguiente: {mod.lessons.slice(lessonIndex + 1).find(l => l.status === 'ACTIVE')?.title || 'Validación final'}</>}
+                                      </p>
                                     </div>
                                   </div>
 
@@ -835,7 +873,7 @@ const AdminDashboard = () => {
 
                                 {/* Desplegable de la Clase: Video, Materiales y Examen */}
                                 {isLessonExp && (
-                                  <div className="pt-3 border-t border-slate-200/70 pl-10 space-y-3">
+                                  <div className="pt-3 border-t border-slate-200/70 sm:pl-10 space-y-3">
                                     {lesson.videoUrl && (
                                       <div className="text-xs text-slate-600 flex items-center gap-2 bg-white p-3 rounded-xl border border-slate-200">
                                         <Video size={16} className="text-rose-600 shrink-0" />
@@ -862,13 +900,13 @@ const AdminDashboard = () => {
                                         lesson.materials.map((mat) => (
                                           <div
                                             key={mat._id}
-                                            className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between gap-3 text-xs"
+                                            className="bg-white p-3 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs"
                                           >
                                             <div className="flex items-center gap-2 min-w-0">
                                               <FileText size={15} className="text-secondary shrink-0" />
-                                              <span className="font-bold text-slate-800 truncate">{mat.title}</span>
+                                              <span className="font-bold text-slate-800 break-words">{mat.title}</span>
                                               <span className="text-[10px] font-black bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
-                                                {mat.type}
+                                                {{ PDF: 'PDF', PPT: 'PowerPoint', DOC: 'Word', IMAGE: 'Imagen', LINK: 'Enlace', TEXT: 'Apunte' }[mat.type] || mat.type}
                                               </span>
                                             </div>
 
@@ -890,7 +928,7 @@ const AdminDashboard = () => {
                                                   rel="noreferrer"
                                                   className="text-sky-700 hover:underline text-xs font-bold"
                                                 >
-                                                  Ver Link
+                                                  Ver enlace
                                                 </a>
                                               )}
                                               <button
@@ -917,7 +955,7 @@ const AdminDashboard = () => {
                                         Examen Asociado
                                       </span>
                                       {lesson.exam ? (
-                                        <div className="mt-1 bg-amber-50/70 border border-amber-200/80 p-3 rounded-xl flex items-center justify-between text-xs">
+                                        <div className="mt-1 bg-amber-50/70 border border-amber-200/80 p-3 rounded-xl flex flex-wrap gap-3 items-center justify-between text-xs">
                                           <div className="flex items-center gap-2">
                                             <Award size={16} className="text-amber-700" />
                                             <span className="font-bold text-amber-900">{lesson.exam.title}</span>
@@ -933,7 +971,7 @@ const AdminDashboard = () => {
                                           </button>
                                         </div>
                                       ) : (
-                                        <div className="mt-1 text-xs text-slate-600 italic flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+                                        <div className="mt-1 text-xs text-slate-600 italic flex flex-wrap gap-3 items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
                                           <span>Esta clase no tiene examen asociado.</span>
                                           <button
                                             onClick={() => openLessonModal(mod._id, lesson)}
@@ -990,7 +1028,7 @@ const AdminDashboard = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black uppercase text-secondary">
-                        {ex.lessonId ? `Asociado a: ${ex.lessonId.title || 'Clase'}` : 'Sin Clase Asociada'}
+                        {ex.moduleId ? `Validación final: ${ex.moduleId.title || 'Módulo'}` : ex.lessonId ? `Asociado a: ${ex.lessonId.title || 'Clase'}` : 'Sin asociación'}
                       </span>
                       <span className="text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-full">
                         Mínimo: {ex.passingScorePercent}%
@@ -1001,7 +1039,8 @@ const AdminDashboard = () => {
                     {ex.description && <p className="text-xs text-slate-600">{ex.description}</p>}
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                    <button onClick={() => openExamResults(ex)} className="text-xs font-bold text-secondary">Ver resultados</button>
                     <button
                       onClick={() => openQuestionsManager(ex)}
                       className="px-4 py-2 bg-primary/20 hover:bg-primary/30 text-slate-900 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer"
@@ -1042,7 +1081,7 @@ const AdminDashboard = () => {
                   Alumnos del Instituto
                 </h2>
                 <p className="text-xs text-slate-600 mt-1">
-                  Creá nuevos alumnos, reseteá contraseñas temporales y activá o desactivá cuentas.
+                  Creá alumnos, restablecé contraseñas temporales y activá o desactivá cuentas.
                 </p>
               </div>
 
@@ -1060,7 +1099,7 @@ const AdminDashboard = () => {
 
             <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-700">
+                <table className="admin-students w-full text-left text-sm text-slate-700">
                   <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-600">
                     <tr>
                       <th className="p-4">Alumno</th>
@@ -1073,18 +1112,18 @@ const AdminDashboard = () => {
                   <tbody className="divide-y divide-slate-100">
                     {students.map((st) => (
                       <tr key={st._id} className="hover:bg-slate-50/60">
-                        <td className="p-4 font-bold text-slate-800">
+                        <td data-label="Alumno" className="p-4 font-bold text-slate-800">
                           {st.firstName} {st.lastName}
                         </td>
-                        <td className="p-4 text-xs font-semibold text-slate-600">
+                        <td data-label="DNI / Usuario" className="p-4 text-xs font-semibold text-slate-600">
                           <div>DNI: {st.dni}</div>
                           <div className="text-sky-700 font-bold">@{st.username}</div>
                         </td>
-                        <td className="p-4 text-xs text-slate-600">
+                        <td data-label="Email / Teléfono" className="p-4 text-xs text-slate-600">
                           <div>{st.email}</div>
                           <div>{st.phone || '-'}</div>
                         </td>
-                        <td className="p-4">
+                        <td data-label="Estado" className="p-4">
                           <span
                             className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
                               st.status === 'ACTIVE'
@@ -1095,7 +1134,7 @@ const AdminDashboard = () => {
                             {st.status === 'ACTIVE' ? 'Activo' : 'Inactivo'}
                           </span>
                         </td>
-                        <td className="p-4 text-right space-x-2">
+                        <td data-label="Acciones" className="p-4 text-right space-x-2">
                           <button
                             onClick={() => handleToggleStudentStatus(st)}
                             className={`p-2 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 cursor-pointer ${
@@ -1103,10 +1142,10 @@ const AdminDashboard = () => {
                                 ? 'bg-amber-50 hover:bg-amber-100 text-amber-800'
                                 : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'
                             }`}
-                            title={st.status === 'ACTIVE' ? 'Dar de baja al alumno' : 'Reactivar alumno'}
+                            title={st.status === 'ACTIVE' ? 'Desactivar al alumno (conserva sus datos)' : 'Reactivar alumno'}
                           >
                             {st.status === 'ACTIVE' ? <UserX size={14} /> : <UserCheck size={14} />}
-                            <span>{st.status === 'ACTIVE' ? 'Dar de baja' : 'Reactivar'}</span>
+                            <span>{st.status === 'ACTIVE' ? 'Desactivar' : 'Reactivar'}</span>
                           </button>
                           <button
                             onClick={() => {
@@ -1115,10 +1154,10 @@ const AdminDashboard = () => {
                               setModalType('RESET_PASS');
                             }}
                             className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                            title="Resetear Contraseña"
+                            title="Restablecer contraseña"
                           >
                             <KeyRound size={14} />
-                            <span>Reset Clave</span>
+                            <span>Restablecer clave</span>
                           </button>
                           <button
                             type="button"
@@ -1142,9 +1181,23 @@ const AdminDashboard = () => {
       </main>
 
       {/* ---------------- MODAL MÓDULO ---------------- */}
+      {modalType === 'RESULTS' && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4">
+            <h3 className="font-bold text-xl">Resultados: {modalData?.title}</h3>
+            <p className="text-sm text-slate-600">Últimos 100 intentos. El historial completo se conserva en la base de datos.</p>
+            {!examResults.length && <p>No hay intentos registrados.</p>}
+            {examResults.map(attempt => <div key={attempt._id} className="border-b border-slate-200 py-3 text-sm">
+              <p className="font-bold">{attempt.studentId?.firstName} {attempt.studentId?.lastName}</p>
+              <p>Intento {attempt.attemptNumber} · {attempt.percentage}% · {attempt.passed ? 'Aprobado' : 'No aprobado'} · {new Date(attempt.createdAt).toLocaleString()}</p>
+            </div>)}
+            <button onClick={() => setModalType(null)} className="px-4 py-2 rounded-xl bg-secondary text-white">Cerrar resultados</button>
+          </div>
+        </div>
+      )}
       {modalType === 'MODULE' && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full space-y-5">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-5">
             <h3 className="text-xl font-black text-slate-800">
               {modalData ? 'Editar Módulo' : 'Crear Nuevo Módulo'}
             </h3>
@@ -1156,7 +1209,7 @@ const AdminDashboard = () => {
                   required
                   value={moduleForm.title}
                   onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
-                  placeholder="Ej: Módulo 1: Introducción a la Veterinaria"
+                  placeholder="Ej: Anatomía"
                   className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm"
                 />
               </div>
@@ -1172,7 +1225,7 @@ const AdminDashboard = () => {
               </div>
 
               <div>
-                <label className="block mb-1">Número de Orden</label>
+                <label className="block mb-1">Orden visual (no establece correlatividad)</label>
                 <input
                   type="number"
                   required
@@ -1182,6 +1235,11 @@ const AdminDashboard = () => {
                 />
               </div>
 
+              <label className="block">Estado
+                <select aria-label="Estado" value={moduleForm.status || 'ACTIVE'} onChange={e => setModuleForm({ ...moduleForm, status: e.target.value })} className="mt-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50">
+                  <option value="ACTIVE">Publicado / Activo</option><option value="INACTIVE">Inactivo</option>
+                </select>
+              </label>
               <div className="pt-4 flex justify-end gap-3">
                 <button
                   type="button"
@@ -1217,7 +1275,7 @@ const AdminDashboard = () => {
                   required
                   value={lessonForm.title}
                   onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
-                  placeholder="Ej: Clase 1: El rol profesional del auxiliar"
+                  placeholder="Ej: Introducción a la anatomía"
                   className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm"
                 />
               </div>
@@ -1234,7 +1292,7 @@ const AdminDashboard = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block mb-1">Orden Correlativo Global</label>
+                  <label className="block mb-1">Orden dentro del módulo</label>
                   <input
                     type="number"
                     required
@@ -1243,7 +1301,7 @@ const AdminDashboard = () => {
                     className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm"
                   />
                   <span className="text-[10px] text-slate-600 font-normal">
-                    Determina el orden de desbloqueo secuencial
+                    Solo define la secuencia de este módulo. No modifica el título.
                   </span>
                 </div>
 
@@ -1255,7 +1313,7 @@ const AdminDashboard = () => {
                     className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm"
                   >
                     <option value="">-- Sin Examen --</option>
-                    {exams.map((ex) => (
+                    {exams.filter(ex => !ex.moduleId && (!ex.lessonId || (ex.lessonId._id || ex.lessonId) === modalData?._id)).map((ex) => (
                       <option key={ex._id} value={ex._id}>
                         {ex.title} ({ex.passingScorePercent}%)
                       </option>
@@ -1275,6 +1333,11 @@ const AdminDashboard = () => {
                 />
               </div>
 
+              <label className="block">Estado
+                <select aria-label="Estado" value={lessonForm.status || 'ACTIVE'} onChange={e => setLessonForm({ ...lessonForm, status: e.target.value })} className="mt-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50">
+                  <option value="ACTIVE">Publicado / Activo</option><option value="INACTIVE">Inactivo</option>
+                </select>
+              </label>
               <div className="pt-4 flex justify-end gap-3">
                 <button
                   type="button"
@@ -1298,7 +1361,7 @@ const AdminDashboard = () => {
       {/* ---------------- MODAL MATERIAL ---------------- */}
       {modalType === 'MATERIAL' && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full space-y-5">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-5">
             <h3 className="text-xl font-black text-slate-800">
               {modalData ? 'Editar Material' : 'Agregar Material a la Clase'}
             </h3>
@@ -1415,7 +1478,7 @@ const AdminDashboard = () => {
       {/* ---------------- MODAL EXAMEN ---------------- */}
       {modalType === 'EXAM' && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full space-y-5">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-5">
             <h3 className="text-xl font-black text-slate-800">
               {modalData ? 'Editar Examen' : 'Crear Nuevo Examen'}
             </h3>
@@ -1461,19 +1524,30 @@ const AdminDashboard = () => {
                   <label className="block mb-1">Asociar a Clase</label>
                   <select
                     value={examForm.lessonId}
-                    onChange={(e) => setExamForm({ ...examForm, lessonId: e.target.value })}
+                    onChange={(e) => setExamForm({ ...examForm, lessonId: e.target.value, moduleId: '' })}
                     className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm"
                   >
                     <option value="">-- Ninguna por ahora --</option>
                     {allLessons.map((l) => (
                       <option key={l._id} value={l._id}>
-                        Clase {l.order}: {l.title}
+                        {l.title}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
+              <label className="block">Validación final de módulo
+                <select aria-label="Validación final de módulo" value={examForm.moduleId || ''} onChange={e => setExamForm({ ...examForm, moduleId: e.target.value, lessonId: '' })} className="mt-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50">
+                  <option value="">-- No es validación final --</option>
+                  {curriculum.map(m => <option key={m._id} value={m._id}>{m.title}</option>)}
+                </select>
+              </label>
+              <label className="block">Estado
+                <select aria-label="Estado" value={examForm.status || 'ACTIVE'} onChange={e => setExamForm({ ...examForm, status: e.target.value })} className="mt-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50">
+                  <option value="ACTIVE">Publicado / Activo</option><option value="INACTIVE">Inactivo</option>
+                </select>
+              </label>
               <div className="pt-4 flex justify-end gap-3">
                 <button
                   type="button"
