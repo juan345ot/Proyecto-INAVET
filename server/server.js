@@ -11,14 +11,27 @@ import { seedInitialData } from './seed.js';
 
 dotenv.config();
 
+// Fail closed: this branch is exclusively for the isolated staging service.
+if (process.env.APP_ENV !== 'staging') throw new Error('Esta rama requiere APP_ENV=staging');
+const stagingUri = new URL(process.env.MONGODB_URI || 'mongodb://localhost/missing');
+if (stagingUri.pathname !== '/inavet_staging' || stagingUri.searchParams.has('dbName')) {
+  throw new Error('Configurar MONGODB_URI exclusivamente para /inavet_staging');
+}
+if (decodeURIComponent(stagingUri.username) !== 'inavet_staging') throw new Error('Se requiere el usuario limitado inavet_staging');
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('Falta JWT_SECRET independiente');
+if (!process.env.ADMIN_PASSWORD) throw new Error('Falta ADMIN_PASSWORD de pruebas');
+if (process.env.STORAGE_SECRET || process.env.STORAGE_URL || process.env.STORAGE_ENABLED !== 'false') {
+  throw new Error('El almacenamiento de produccion no esta permitido en staging');
+}
+
 const app = express();
 
 // Middlewares
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:4173',
-  'https://inavet.com.ar',
-  'https://www.inavet.com.ar',
+
+
   process.env.FRONTEND_URL, // URL del Static Site de Render
 ].filter(Boolean);
 
@@ -36,9 +49,8 @@ app.use(cors({
 app.use(express.json());
 
 // Conexión a MongoDB
-connectDB().then(() => {
-  seedInitialData();
-});
+await connectDB();
+// Datos de prueba se crean manualmente; no ejecutar seeds al iniciar.
 
 // Rutas de API
 app.use('/api/auth', authRoutes);
