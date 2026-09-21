@@ -157,16 +157,16 @@ const StudentHome = () => {
             {modules.map((mod) => (
               <div
                 key={mod._id}
-                className="bg-slate-100 rounded-3xl border border-slate-300/70 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                className="bg-[#d8e2ee] rounded-3xl border border-[#b7c8dc] overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
                 {/* Cabecera del Módulo */}
-                <div className="p-4 sm:p-6 bg-slate-100 border-b border-slate-200 flex flex-wrap gap-3 items-center justify-between">
+                <div className="p-4 sm:p-6 bg-[#cbd9e9] border-b border-[#b7c8dc] flex flex-wrap gap-3 items-center justify-between">
                   <div>
                     <h3 className="text-lg font-black text-slate-800 mt-0.5">
                       {mod.title}
                     </h3>
                     {mod.description && (
-                      <p className="text-xs text-slate-500 mt-1">{mod.description}</p>
+                      <p className="text-xs text-slate-700 mt-1">{mod.description}</p>
                     )}
                   </div>
 

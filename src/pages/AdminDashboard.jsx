@@ -733,10 +733,10 @@ const AdminDashboard = () => {
                 return (
                   <div
                     key={mod._id}
-                    className="bg-slate-100 rounded-3xl border border-slate-300/70 shadow-sm overflow-hidden transition-shadow hover:shadow-md"
+                    className="bg-[#d8e2ee] rounded-3xl border border-[#b7c8dc] shadow-sm overflow-hidden transition-shadow hover:shadow-md"
                   >
                     {/* Fila Cabecera del Módulo */}
-                    <div className="p-4 sm:p-6 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                    <div className="p-4 sm:p-6 bg-[#cbd9e9] border-b border-[#b7c8dc] flex flex-wrap items-center justify-between gap-4">
                       <div
                         onClick={() => toggleModule(mod._id)}
                         className="flex items-center gap-3 cursor-pointer w-full sm:w-auto sm:flex-1 min-w-0 select-none"
