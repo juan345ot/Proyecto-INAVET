@@ -4,6 +4,7 @@ const examSchema = new mongoose.Schema(
   {
     // Optional: final evaluation; legacy lesson associations remain unchanged.
     moduleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Module', default: null },
+    maxAttemptsPerAuthorization: { type: Number, default: 3, min: 1, max: 100, validate: Number.isInteger },
     lessonId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Lesson',
@@ -37,5 +38,7 @@ const examSchema = new mongoose.Schema(
   }
 );
 
+examSchema.index({ lessonId: 1 }, { name: 'unique_real_lesson', unique: true, partialFilterExpression: { lessonId: { $type: 'objectId' } } });
+examSchema.index({ moduleId: 1 }, { name: 'unique_final_module', unique: true, partialFilterExpression: { moduleId: { $type: 'objectId' } } });
 const Exam = mongoose.model('Exam', examSchema);
 export default Exam;

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const questionSchema = new mongoose.Schema(
   {
+    sourceQuestionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question' },
     examId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Exam',
@@ -35,5 +36,6 @@ const questionSchema = new mongoose.Schema(
   }
 );
 
+questionSchema.index({ examId: 1, sourceQuestionId: 1 }, { unique: true, partialFilterExpression: { sourceQuestionId: { $type: 'objectId' } } });
 const Question = mongoose.model('Question', questionSchema);
 export default Question;

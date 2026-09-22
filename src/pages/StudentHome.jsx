@@ -19,6 +19,8 @@ const StudentHome = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refresh, setRefresh] = useState(0);
+  const [requesting, setRequesting] = useState(null);
 
   const { token } = useAuth();
   const navigate = useNavigate();
@@ -42,7 +44,17 @@ const StudentHome = () => {
       }
     };
     fetchDashboard();
-  }, [token]);
+  }, [token, refresh]);
+
+  const requestFinal = async (examId) => {
+    setRequesting(examId);
+    try {
+      const response = await apiFetch(`/api/student/final-exams/${examId}/request`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'No se pudo enviar la solicitud');
+      setRefresh(n => n + 1);
+    } catch (e) { alert(e.message); } finally { setRequesting(null); }
+  };
 
   if (loading) {
     return (
@@ -66,6 +78,8 @@ const StudentHome = () => {
   }
 
   const { welcomeName, totalLessons, completedLessonsCount, progressPercentage, isCourseFinished, continueWhereLeft, modules } = data;
+  const continuingModuleTitle = continueWhereLeft?.moduleTitle || modules.find(module =>
+    module.lessons.some(lesson => String(lesson._id) === String(continueWhereLeft?._id)))?.title;
 
   return (
     <StudentLayout>
@@ -100,7 +114,7 @@ const StudentHome = () => {
               <p className="text-xs text-white mt-3 font-semibold">
                 {completedLessonsCount} de {totalLessons} clases completadas
               </p>
-              {totalLessons > 0 && completedLessonsCount === totalLessons && !isCourseFinished && <p className="text-xs text-white mt-2">Faltan las validaciones finales para completar el curso.</p>}
+              {totalLessons > 0 && completedLessonsCount === totalLessons && !isCourseFinished && <p className="text-xs text-white mt-2">Faltan los exámenes finales para completar el curso.</p>}
             </div>
           </div>
         </div>
@@ -128,6 +142,11 @@ const StudentHome = () => {
                 <span className="text-xs font-black uppercase tracking-widest text-sky-700">
                   Continuar donde lo dejaste
                 </span>
+                {continuingModuleTitle && (
+                  <p className="text-sm font-bold text-slate-700 break-words">
+                    Módulo: {continuingModuleTitle}
+                  </p>
+                )}
                 <h3 className="text-xl md:text-2xl font-black text-slate-800">
                   {continueWhereLeft.title}
                 </h3>
@@ -262,14 +281,18 @@ const StudentHome = () => {
                 </div>
                 <div className="p-4 sm:p-6 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <h4 className="font-bold text-slate-800">Validación final</h4>
-                    <p className="text-sm text-slate-600 break-words">{mod.finalExam?.title || 'El administrador todavía no publicó la validación final.'}</p>
+                    <h4 className="font-bold text-slate-800">Examen final</h4>
+                    <p className="text-sm text-slate-700 break-words">{mod.finalExam?.title || 'El administrador todavía no publicó el examen final.'}</p>
+                    {mod.finalExam?.authorization?.status === 'APPROVED' && <p className="text-sm text-slate-700">Intentos disponibles: {mod.finalExam.authorization.attemptsRemaining} de {mod.finalExam.authorization.attemptLimit}</p>}
                   </div>
                   {mod.finalExam && (mod.finalExam.status === 'LOCKED'
-                    ? <span className="text-xs font-bold text-slate-600">Bloqueada: completá todas las clases</span>
-                    : <Link to={`/aula/examen/${mod.finalExam._id}`} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold">
-                        {mod.finalExam.status === 'COMPLETED' ? 'Aprobada · Ver evaluación' : 'Realizar validación final'}
-                      </Link>)}
+                    ? <span className="text-xs font-bold text-slate-600">Bloqueado: completá todas las clases</span>
+                    : mod.finalExam.status === 'COMPLETED' || (mod.finalExam.authorization?.status === 'APPROVED' && mod.finalExam.authorization.attemptsRemaining > 0)
+                      ? <Link to={`/aula/examen/${mod.finalExam._id}`} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold">{mod.finalExam.status === 'COMPLETED' ? 'Aprobado · Ver examen' : 'Rendir examen final'}</Link>
+                      : <div className="space-y-2 text-sm text-slate-700">
+                        <p>{mod.finalExam.authorization?.status === 'PENDING' ? 'Solicitud enviada. Esperá la autorización del administrador.' : mod.finalExam.authorization?.status === 'EXHAUSTED' ? 'Agotaste tus intentos. Pedí una nueva autorización.' : mod.finalExam.authorization?.status === 'REVOKED' ? 'Permiso revocado. Podés solicitar autorización nuevamente.' : 'Necesitás autorización del administrador para rendir.'}</p>
+                        <button disabled={requesting === mod.finalExam._id || mod.finalExam.authorization?.status === 'PENDING'} onClick={() => requestFinal(mod.finalExam._id)} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold disabled:opacity-50">{mod.finalExam.authorization?.status === 'PENDING' ? 'Autorización pendiente' : 'Solicitar autorización'}</button>
+                      </div>)}
                 </div>
               </div>
             ))}

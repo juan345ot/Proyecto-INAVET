@@ -13,12 +13,15 @@ import Exam from '../models/Exam.js';
 import Question from '../models/Question.js';
 import ExamAttempt from '../models/ExamAttempt.js';
 import StudentProgress from '../models/StudentProgress.js';
+import FinalAuthorization from '../models/FinalAuthorization.js';
+import { adminFinalRoutes } from './finalExamRoutes.js';
 
 const router = express.Router();
 
 // Aplica protección de admin estricta
 router.use(protect);
 router.use(requireRole('ADMIN'));
+router.use(adminFinalRoutes);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -465,7 +468,9 @@ async function saveExam(req, res) {
   try {
     const exam = req.params.id ? await Exam.findById(req.params.id) : new Exam();
     if (!exam) return res.status(404).json({ success: false, message: 'Examen no encontrado' });
-    for (const key of ['title','description','passingScorePercent','status']) {
+    const previousModule = String(exam.moduleId || '');
+    const previousLesson = String(exam.lessonId || '');
+    for (const key of ['title','description','passingScorePercent','status','maxAttemptsPerAuthorization']) {
       if (req.body[key] !== undefined) exam[key] = req.body[key];
     }
     if (req.body.lessonId !== undefined) exam.lessonId = req.body.lessonId || null;
@@ -473,6 +478,8 @@ async function saveExam(req, res) {
     if (exam.lessonId && exam.moduleId) throw new Error('Elegí una clase o un módulo, no ambos.');
     if (exam.lessonId && !await Lesson.exists({ _id: exam.lessonId })) throw new Error('Clase inexistente');
     if (exam.moduleId && !await Module.exists({ _id: exam.moduleId })) throw new Error('Módulo inexistente');
+    if (req.params.id && (previousModule !== String(exam.moduleId || '') || previousLesson !== String(exam.lessonId || '')) &&
+      (await ExamAttempt.exists({ examId: exam._id }) || await FinalAuthorization.exists({ examId: exam._id }))) throw new Error('No se puede cambiar la asociación de un examen con intentos o solicitudes. Creá otro examen para conservar el historial.');
     const association = exam.moduleId ? { moduleId: exam.moduleId } : exam.lessonId ? { lessonId: exam.lessonId } : null;
     if (association && await Exam.exists({ ...association, _id: { $ne: exam._id } })) {
       throw new Error('Ya existe un examen asociado. Editalo o desvinculalo antes de asociar otro.');
@@ -480,7 +487,7 @@ async function saveExam(req, res) {
     await exam.save();
     res.status(req.params.id ? 200 : 201).json({ success: true, data: exam });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(400).json({ success: false, message: error.code === 11000 ? 'Ya existe un examen vinculado a esa clase o módulo. Actualizá la página.' : error.message });
   }
 }
 router.post('/exams', saveExam);

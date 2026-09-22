@@ -88,7 +88,7 @@ const StudentExam = () => {
       const resData = await res.json();
       if (resData.success) {
         setResult(resData.data);
-        setData(prev => ({ ...prev, attemptsCount: resData.data.attemptNumber, lastAttempt: resData.data }));
+        setData(prev => ({ ...prev, attemptsCount: resData.data.attemptNumber, lastAttempt: resData.data, exam: { ...prev.exam, alreadyPassed: !!prev.exam.moduleId && resData.data.passed, authorization: prev.exam.moduleId ? { ...prev.exam.authorization, attemptsRemaining: resData.data.attemptsRemaining } : null } }));
       } else {
         alert(resData.message || 'Error al procesar el examen');
       }
@@ -151,9 +151,10 @@ const StudentExam = () => {
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-slate-900">{exam.title}</h1>
-          <p className="text-sm text-slate-600">Intentos realizados: {attemptsCount}. Intentos ilimitados.
+          <p className="text-sm text-slate-600">Intentos realizados: {attemptsCount}. {exam.moduleId ? `Intentos disponibles en esta autorización: ${exam.alreadyPassed ? 0 : (exam.authorization?.attemptsRemaining || 0)}.` : 'Intentos ilimitados.'}
             {lastAttempt && ` Último resultado: ${lastAttempt.percentage}% (${lastAttempt.passed ? 'aprobado' : 'no aprobado'}).`}
           </p>
+          {exam.moduleId && exam.alreadyPassed && <p className="text-emerald-800 font-bold">Este examen final ya está aprobado.</p>}
           {exam.description && <p className="text-sm text-slate-500">{exam.description}</p>}
         </div>
 
@@ -196,13 +197,13 @@ const StudentExam = () => {
                 >
                   Volver al aula y ver mi progreso
                 </Link>
-              ) : (
+              ) : exam.moduleId && !exam.authorization?.attemptsRemaining ? <Link to="/aula" className="px-5 py-3 rounded-xl bg-secondary text-white font-bold">Volver al aula y solicitar autorización</Link> : (
                 <button
                   onClick={handleRetry}
                   className="w-full sm:w-auto px-8 py-3.5 bg-secondary hover:bg-secondary-hover text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <RotateCcw size={16} />
-                  <span>Intentar Nuevamente (Intentos Ilimitados)</span>
+                  <span>{exam.moduleId ? 'Intentar nuevamente' : 'Intentar nuevamente (intentos ilimitados)'}</span>
                 </button>
               )}
             </div>
@@ -210,7 +211,7 @@ const StudentExam = () => {
         )}
 
         {/* Cuestionario */}
-        {(!result || !result.passed) && (
+        {(!result || !result.passed) && (!exam.moduleId || (!exam.alreadyPassed && exam.authorization?.attemptsRemaining > 0)) && (
           <form onSubmit={handleSubmit} className="space-y-6">
             {questions.map((q, qIndex) => (
               <div

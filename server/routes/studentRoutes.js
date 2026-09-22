@@ -10,6 +10,8 @@ import Question from '../models/Question.js';
 import StudentProgress from '../models/StudentProgress.js';
 import ExamAttempt from '../models/ExamAttempt.js';
 import { canAccessLesson, canAccessExam, getCurriculum, updateLessonCompletionStatus } from '../services/progressService.js';
+import { studentFinalRoutes } from './finalExamRoutes.js';
+import { recordFinalAttempt } from '../services/finalAttemptService.js';
 
 const router = express.Router();
 
@@ -18,6 +20,7 @@ router.use(protect);
 router.use(requireRole('STUDENT', 'ADMIN'));
 router.use((req, res, next) => req.user.mustChangePassword
   ? res.status(403).json({ success: false, message: 'Cambiá tu contraseña para acceder al contenido.' }) : next());
+router.use(studentFinalRoutes);
 
 // @route   GET /api/student/dashboard
 // @desc    Obtiene visión general del curso para el alumno: módulos, progreso, continuar donde lo dejaste
@@ -36,6 +39,9 @@ router.get('/dashboard', async (req, res) => {
     const lastVisitedLesson = [...pending].filter(l => l.progress.lastAccessedAt)
       .sort((a,b) => new Date(b.progress.lastAccessedAt) - new Date(a.progress.lastAccessedAt))[0];
     const nextAvailableLesson = pending[0];
+    const continuingLesson = lastVisitedLesson || nextAvailableLesson;
+    const continuingModule = continuingLesson && modulesStructured.find(m =>
+      m.lessons.some(l => String(l._id) === String(continuingLesson._id)));
 
     res.json({
       success: true,
@@ -45,7 +51,7 @@ router.get('/dashboard', async (req, res) => {
         completedLessonsCount,
         progressPercentage,
         isCourseFinished,
-        continueWhereLeft: lastVisitedLesson || nextAvailableLesson || null,
+        continueWhereLeft: continuingLesson ? { ...continuingLesson, moduleTitle: continuingModule?.title || '' } : null,
         modules: modulesStructured,
       },
     });
@@ -225,6 +231,8 @@ router.get('/exam/:examId', async (req, res) => {
           description: exam.description,
           passingScorePercent: exam.passingScorePercent,
           moduleId: exam.moduleId || null,
+          authorization: access.authorization || null,
+          alreadyPassed: access.alreadyPassed || false,
         },
         questions,
         attemptsCount,
@@ -283,7 +291,7 @@ router.post('/exam/:examId/submit', async (req, res) => {
     const previousAttempts = await ExamAttempt.countDocuments({ studentId, examId: exam._id });
 
     // Guardar intento en historial
-    const attempt = await ExamAttempt.create({
+    const payload = {
       studentId,
       examId: exam._id,
       attemptNumber: previousAttempts + 1,
@@ -292,7 +300,9 @@ router.post('/exam/:examId/submit', async (req, res) => {
       percentage,
       passed,
       answers: gradedAnswers,
-    });
+    };
+    const finalResult = exam.moduleId ? await recordFinalAttempt(payload) : null;
+    const attempt = finalResult ? finalResult.attempt : await ExamAttempt.create(payload);
 
     // Si aprobó, actualizar StudentProgress de la clase
     if (passed && exam.lessonId && !exam.moduleId) {
@@ -318,13 +328,14 @@ router.post('/exam/:examId/submit', async (req, res) => {
         passingScorePercent: exam.passingScorePercent,
         passed,
         attemptNumber: attempt.attemptNumber,
+        attemptsRemaining: finalResult?.remaining ?? null,
         message: passed
           ? '¡Felicitaciones! Has aprobado el examen.'
-          : 'No alcanzaste el puntaje mínimo requerido. Podés intentarlo nuevamente.',
+          : finalResult?.remaining === 0 ? 'Agotaste los intentos autorizados. Volvé al aula para solicitar una nueva autorización.' : 'No alcanzaste el puntaje mínimo requerido. Podés intentarlo nuevamente.',
       },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.status || 500).json({ success: false, message: error.message });
   }
 });
 

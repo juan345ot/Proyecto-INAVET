@@ -28,6 +28,7 @@ import {
 import logo from '../assets/logo.png';
 import { apiFetch } from '../lib/api';
 import './AdminDashboard.css';
+import { FinalAuthorizations, FinalQuestionBank } from './FinalExamTools';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('modulos'); // 'modulos' | 'examenes' | 'alumnos'
@@ -50,6 +51,7 @@ const AdminDashboard = () => {
   const [moduleForm, setModuleForm] = useState({ title: '', description: '', order: 1 });
   const [lessonForm, setLessonForm] = useState({ moduleId: '', title: '', description: '', order: 1, videoUrl: '', examId: '' });
   const [materialForm, setMaterialForm] = useState({ lessonId: '', title: '', type: 'PDF', url: '', content: '', order: 1 });
+  const [finalExamModal, setFinalExamModal] = useState(false);
   const [examForm, setExamForm] = useState({ title: '', description: '', passingScorePercent: 70, lessonId: '' });
   const [questionForm, setQuestionForm] = useState({ examId: '', prompt: '', options: ['', '', '', ''], correctOptionIndex: 0 });
   const [examQuestions, setExamQuestions] = useState([]);
@@ -371,11 +373,13 @@ const AdminDashboard = () => {
 
   // ---------------- GESTIÓN DE EXÁMENES ----------------
   const openExamModal = (exam = null, moduleId = '') => {
+    setFinalExamModal(!!exam?.moduleId || !!moduleId || (!exam && activeTab === 'finales'));
     if (exam) {
       setExamForm({
         title: exam.title,
         description: exam.description || '',
         passingScorePercent: exam.passingScorePercent ?? 70,
+        maxAttemptsPerAuthorization: exam.maxAttemptsPerAuthorization ?? 3,
         moduleId: exam.moduleId ? (exam.moduleId._id || exam.moduleId) : '',
         status: exam.status || 'ACTIVE',
         lessonId: exam.lessonId ? (exam.lessonId._id || exam.lessonId) : '',
@@ -386,6 +390,7 @@ const AdminDashboard = () => {
         title: '',
         description: '',
         passingScorePercent: 70,
+        maxAttemptsPerAuthorization: 3,
         moduleId,
         status: 'ACTIVE',
         lessonId: '',
@@ -397,6 +402,7 @@ const AdminDashboard = () => {
 
   const handleSaveExam = async (e) => {
     e.preventDefault();
+    if (finalExamModal && !examForm.moduleId) { alert('Seleccioná el módulo del examen final'); return; }
     try {
       const url = modalData ? `/api/admin/exams/${modalData._id}` : '/api/admin/exams';
       const method = modalData ? 'PUT' : 'POST';
@@ -652,7 +658,8 @@ const AdminDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 py-3 overflow-x-auto">
           {[
             { id: 'modulos', label: 'Gestión de Curso (Módulos, Clases y Materiales)', shortLabel: 'Curso', icon: Layers },
-            { id: 'examenes', label: 'Banco de Exámenes y Preguntas', shortLabel: 'Exámenes', icon: Award },
+            { id: 'examenes', label: 'Exámenes de clases', shortLabel: 'Clases', icon: Award },
+            { id: 'finales', label: 'Exámenes finales', shortLabel: 'Finales', icon: Award },
             { id: 'alumnos', label: 'Gestión de Alumnos', shortLabel: 'Alumnos', icon: Users },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -663,7 +670,7 @@ const AdminDashboard = () => {
                 onClick={() => setActiveTab(tab.id)}
                 aria-label={tab.label}
                 aria-pressed={active}
-                className={`px-2 lg:px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1 lg:gap-2 flex-1 lg:flex-none shrink-0 transition-all cursor-pointer ${
+                className={`px-2 lg:px-5 py-3 rounded-2xl font-bold text-[10px] sm:text-xs uppercase tracking-wide flex items-center justify-center gap-1 lg:gap-2 flex-1 lg:flex-none shrink-0 transition-all cursor-pointer ${
                   active
                     ? 'bg-secondary text-white shadow-lg shadow-secondary/25'
                     : 'text-slate-600 hover:bg-slate-100'
@@ -790,13 +797,13 @@ const AdminDashboard = () => {
                       <div className="p-4 sm:p-6 space-y-4">
                         <div className="rounded-2xl border border-slate-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3">
                           <div className="text-sm text-slate-700">
-                            <p className="font-bold">Validación final</p>
-                            <p>{mod.finalExam ? mod.finalExam.title + (mod.finalExam.status === 'ACTIVE' ? ' · Activa' : ' · Inactiva') : 'Pendiente de configurar'}</p>
+                            <p className="font-bold">Examen final</p>
+                            <p>{mod.finalExam ? mod.finalExam.title + (mod.finalExam.status === 'ACTIVE' ? ' · Activo' : ' · Inactivo') : 'Pendiente de configurar'}</p>
                           </div>
-                          <button onClick={() => openExamModal(mod.finalExam, mod._id)} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold">
-                            {mod.finalExam ? 'Editar validación final' : 'Crear validación final'}
+                          <button disabled={!!mod.finalExam} onClick={() => { setActiveTab('finales'); openExamModal(null, mod._id); }} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed">
+                            {mod.finalExam ? 'Examen final vinculado' : 'Agregar examen final'}
                           </button>
-                          {mod.finalExam && <button onClick={() => openQuestionsManager(mod.finalExam)} className="text-secondary font-bold text-xs">Preguntas de la validación</button>}
+                          {mod.finalExam && <button onClick={() => setActiveTab('finales')} className="text-secondary font-bold text-xs">Gestionar en Exámenes finales</button>}
                         </div>
                         {(mod.lessons || []).length === 0 ? (
                           <div className="text-center py-6 text-slate-600 text-xs italic bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
@@ -840,7 +847,7 @@ const AdminDashboard = () => {
                                         {lesson.title}
                                       </h4>
                                       <p className="mt-1 text-xs text-slate-600 break-words">
-                                        {lesson.status !== 'ACTIVE' ? 'Clase inactiva: no participa de la secuencia.' : <>Anterior: {mod.lessons.slice(0, lessonIndex).filter(l => l.status === 'ACTIVE').at(-1)?.title || 'Inicio del módulo'} · Siguiente: {mod.lessons.slice(lessonIndex + 1).find(l => l.status === 'ACTIVE')?.title || 'Validación final'}</>}
+                                        {lesson.status !== 'ACTIVE' ? 'Clase inactiva: no participa de la secuencia.' : <>Anterior: {mod.lessons.slice(0, lessonIndex).filter(l => l.status === 'ACTIVE').at(-1)?.title || 'Inicio del módulo'} · Siguiente: {mod.lessons.slice(lessonIndex + 1).find(l => l.status === 'ACTIVE')?.title || 'Examen final'}</>}
                                       </p>
                                     </div>
                                   </div>
@@ -998,12 +1005,12 @@ const AdminDashboard = () => {
         )}
 
         {/* ---------------- PESTAÑA: BANCO DE EXÁMENES ---------------- */}
-        {activeTab === 'examenes' && (
+        {(activeTab === 'examenes' || activeTab === 'finales') && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                  Banco de Exámenes y Preguntas
+                  {activeTab === 'finales' ? 'Exámenes finales' : 'Exámenes de clases y preguntas'}
                 </h2>
                 <p className="text-xs text-slate-600 mt-1">
                   Creá, editá exámenes, configurá el porcentaje de aprobación y agregá preguntas autocorregibles.
@@ -1015,12 +1022,12 @@ const AdminDashboard = () => {
                 className="px-6 py-3.5 bg-secondary hover:bg-secondary-hover text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-secondary/20 flex items-center justify-center gap-2 cursor-pointer transition-all shrink-0"
               >
                 <Plus size={16} />
-                <span>Crear Nuevo Examen</span>
+                <span>{activeTab === 'finales' ? 'Crear examen final' : 'Crear examen de clase'}</span>
               </button>
             </div>
 
             <div className="grid md:grid-cols-2 gap-5">
-              {exams.map((ex) => (
+              {exams.filter(ex => activeTab === 'finales' ? !!ex.moduleId : !ex.moduleId).map((ex) => (
                 <div
                   key={ex._id}
                   className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between"
@@ -1028,7 +1035,7 @@ const AdminDashboard = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black uppercase text-secondary">
-                        {ex.moduleId ? `Validación final: ${ex.moduleId.title || 'Módulo'}` : ex.lessonId ? `Asociado a: ${ex.lessonId.title || 'Clase'}` : 'Sin asociación'}
+                        {ex.moduleId ? `Examen final: ${ex.moduleId.title || 'Módulo'}` : ex.lessonId ? `Asociado a: ${ex.lessonId.title || 'Clase'}` : 'Sin asociación'}
                       </span>
                       <span className="text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-full">
                         Mínimo: {ex.passingScorePercent}%
@@ -1037,6 +1044,7 @@ const AdminDashboard = () => {
 
                     <h3 className="text-lg font-black text-slate-800">{ex.title}</h3>
                     {ex.description && <p className="text-xs text-slate-600">{ex.description}</p>}
+                    {ex.moduleId && <p className="text-sm text-slate-700">{ex.maxAttemptsPerAuthorization || 3} intentos por autorización · {ex.status === 'ACTIVE' ? 'Publicado' : 'Inactivo'}</p>}
                   </div>
 
                   <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
@@ -1075,6 +1083,7 @@ const AdminDashboard = () => {
         {/* ---------------- PESTAÑA: ALUMNOS ---------------- */}
         {activeTab === 'alumnos' && (
           <div className="space-y-6">
+            <FinalAuthorizations token={token} />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -1480,7 +1489,7 @@ const AdminDashboard = () => {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-5">
             <h3 className="text-xl font-black text-slate-800">
-              {modalData ? 'Editar Examen' : 'Crear Nuevo Examen'}
+              {finalExamModal ? (modalData ? 'Editar examen final' : 'Crear examen final') : (modalData ? 'Editar examen de clase' : 'Crear examen de clase')}
             </h3>
             <form onSubmit={handleSaveExam} className="space-y-4 text-xs font-bold text-slate-600">
               <div>
@@ -1520,7 +1529,7 @@ const AdminDashboard = () => {
                   <span className="text-[10px] text-slate-600 font-normal">Por defecto: 70%</span>
                 </div>
 
-                <div>
+                {!finalExamModal && <div>
                   <label className="block mb-1">Asociar a Clase</label>
                   <select
                     value={examForm.lessonId}
@@ -1534,15 +1543,19 @@ const AdminDashboard = () => {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div>}
               </div>
 
-              <label className="block">Validación final de módulo
-                <select aria-label="Validación final de módulo" value={examForm.moduleId || ''} onChange={e => setExamForm({ ...examForm, moduleId: e.target.value, lessonId: '' })} className="mt-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50">
-                  <option value="">-- No es validación final --</option>
-                  {curriculum.map(m => <option key={m._id} value={m._id}>{m.title}</option>)}
+              {finalExamModal && <><label className="block">Módulo del examen final
+                <select aria-label="Módulo del examen final" required value={examForm.moduleId || ''} onChange={e => setExamForm({ ...examForm, moduleId: e.target.value, lessonId: '' })} className="mt-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50">
+                  <option value="">-- Seleccioná un módulo --</option>
+                  {curriculum.map(m => <option key={m._id} value={m._id} disabled={!!m.finalExam && m.finalExam._id !== modalData?._id}>{m.title}{m.finalExam && m.finalExam._id !== modalData?._id ? ' (ya tiene final)' : ''}</option>)}
                 </select>
               </label>
+              <label className="block">Intentos por autorización (incluye el primer intento)
+                <input aria-label="Intentos por autorización" type="number" min="1" max="100" step="1" required value={examForm.maxAttemptsPerAuthorization ?? 3} onChange={e => setExamForm({ ...examForm, maxAttemptsPerAuthorization: Number(e.target.value) })} className="mt-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50" />
+              </label>
+              <p className="text-xs text-slate-600">Ejemplo: 3 intentos = primer intento y 2 reintentos. Los cambios se aplican a las próximas autorizaciones; los permisos ya otorgados conservan su cupo.</p></>}
               <label className="block">Estado
                 <select aria-label="Estado" value={examForm.status || 'ACTIVE'} onChange={e => setExamForm({ ...examForm, status: e.target.value })} className="mt-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50">
                   <option value="ACTIVE">Publicado / Activo</option><option value="INACTIVE">Inactivo</option>
@@ -1590,6 +1603,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Listado de preguntas existentes */}
+            {selectedExamForQuestions.moduleId && <FinalQuestionBank examId={selectedExamForQuestions._id} token={token} onCopied={() => openQuestionsManager(selectedExamForQuestions)} />}
             <div className="space-y-3">
               <span className="text-xs font-black uppercase text-slate-600">
                 Preguntas Actuales ({examQuestions.length})

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test curriculum-rules.test.mjs && node modules-integration.mjs"
+    "test": "node --test curriculum-rules.test.mjs && node modules-integration.mjs && node exam-index-migration.mjs"
   },
   "devDependencies": {
     "mongodb-memory-server": "11.2.0"

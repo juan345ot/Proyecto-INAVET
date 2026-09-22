@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const examAttemptSchema = new mongoose.Schema(
   {
+    authorizationCycle: Number,
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

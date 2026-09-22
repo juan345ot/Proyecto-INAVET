@@ -6,6 +6,7 @@ import Material from '../models/Material.js';
 import Exam from '../models/Exam.js';
 import ExamAttempt from '../models/ExamAttempt.js';
 import StudentProgress from '../models/StudentProgress.js';
+import FinalAuthorization from '../models/FinalAuthorization.js';
 import { evaluateCurriculum, idOf } from './curriculumRules.js';
 
 export async function getCurriculum(studentId, moduleId) {
@@ -18,7 +19,18 @@ export async function getCurriculum(studentId, moduleId) {
     StudentProgress.find({ studentId, lessonId: { $in: lessonIds } }).lean(),
   ]);
   const attempts = await ExamAttempt.find({ studentId, examId: { $in: exams.map(e => e._id) } }).select('examId passed').lean();
-  return evaluateCurriculum({ modules, lessons, materials, exams, progress, attempts });
+  const curriculum = evaluateCurriculum({ modules, lessons, materials, exams, progress, attempts });
+  const grants = await FinalAuthorization.find({ studentId, examId: { $in: exams.filter(e => e.moduleId).map(e => e._id) } }).lean();
+  for (const module of curriculum) {
+    if (!module.finalExam) continue;
+    const grant = grants.find(g => idOf(g.examId) === idOf(module.finalExam));
+    module.finalExam.authorization = {
+      status: grant?.status || 'NONE',
+      attemptsRemaining: grant?.status === 'APPROVED' ? Math.max(0, grant.attemptLimit - grant.attemptsUsed) : 0,
+      attemptLimit: grant?.attemptLimit || 0,
+    };
+  }
+  return curriculum;
 }
 
 async function activeStudent(studentId) {
@@ -45,9 +57,11 @@ export async function canAccessExam(studentId, exam) {
   if (exam.lessonId || !await activeStudent(studentId)) return { allowed: false, reason: 'Acceso denegado' };
   const [module] = await getCurriculum(studentId, exam.moduleId);
   const final = module?.finalExam;
-  return final && idOf(final) === idOf(exam) && final.status !== 'LOCKED'
-    ? { allowed: true }
-    : { allowed: false, reason: 'Completá todas las clases de este módulo para realizar su validación final.' };
+  if (!final || idOf(final) !== idOf(exam) || final.status === 'LOCKED') return { allowed: false, reason: 'Completá todas las clases de este módulo para realizar su examen final.' };
+  const authorization = final.authorization;
+  return final.status === 'COMPLETED' || (authorization.status === 'APPROVED' && authorization.attemptsRemaining > 0)
+    ? { allowed: true, authorization, alreadyPassed: final.status === 'COMPLETED' }
+    : { allowed: false, reason: 'Solicitá autorización al administrador para rendir este examen final.' };
 }
 
 export async function updateLessonCompletionStatus(studentId, lessonId) {
