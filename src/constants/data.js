@@ -27,7 +27,7 @@ export const CONTACT_INFO = {
 };
 
 export const COURSE_INFO = {
-  price: "$49.000",
+  price: "$59.000",
   duration: "7 meses",
   certification:
     "Certificado INAVET / Cámara Argentina para la Formación Profesional",
