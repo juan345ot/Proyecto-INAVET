@@ -52,6 +52,7 @@ const AdminDashboard = () => {
   const [lessonForm, setLessonForm] = useState({ moduleId: '', title: '', description: '', order: 1, videoUrl: '', examId: '' });
   const [materialForm, setMaterialForm] = useState({ lessonId: '', title: '', type: 'PDF', url: '', content: '', order: 1 });
   const [finalExamModal, setFinalExamModal] = useState(false);
+  const [classExamModuleId, setClassExamModuleId] = useState('');
   const [examForm, setExamForm] = useState({ title: '', description: '', passingScorePercent: 70, lessonId: '' });
   const [questionForm, setQuestionForm] = useState({ examId: '', prompt: '', options: ['', '', '', ''], correctOptionIndex: 0 });
   const [examQuestions, setExamQuestions] = useState([]);
@@ -373,6 +374,8 @@ const AdminDashboard = () => {
 
   // ---------------- GESTIÓN DE EXÁMENES ----------------
   const openExamModal = (exam = null, moduleId = '') => {
+    const linkedLessonId = exam?.lessonId?._id || exam?.lessonId;
+    setClassExamModuleId(curriculum.find(m => m.lessons?.some(l => l._id === linkedLessonId))?._id || '');
     setFinalExamModal(!!exam?.moduleId || !!moduleId || (!exam && activeTab === 'finales'));
     if (exam) {
       setExamForm({
@@ -403,6 +406,7 @@ const AdminDashboard = () => {
   const handleSaveExam = async (e) => {
     e.preventDefault();
     if (finalExamModal && !examForm.moduleId) { alert('Seleccioná el módulo del examen final'); return; }
+    if (!finalExamModal && classExamModuleId && !examForm.lessonId) { alert('Seleccioná una clase del módulo'); return; }
     try {
       const url = modalData ? `/api/admin/exams/${modalData._id}` : '/api/admin/exams';
       const method = modalData ? 'PUT' : 'POST';
@@ -410,7 +414,7 @@ const AdminDashboard = () => {
       const res = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(examForm),
+        body: JSON.stringify({ ...examForm, ...(!finalExamModal ? { classModuleId: classExamModuleId } : {}) }),
       });
       const data = await res.json();
       if (data.success) {
@@ -611,14 +615,6 @@ const AdminDashboard = () => {
       alert('Error de conexión al actualizar el estado del alumno.');
     }
   };
-
-  // Lista plana de todas las clases para los selectores
-  const allLessons = [];
-  curriculum.forEach((m) => {
-    (m.lessons || []).forEach((l) => {
-      allLessons.push(l);
-    });
-  });
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -1530,14 +1526,22 @@ const AdminDashboard = () => {
                 </div>
 
                 {!finalExamModal && <div>
-                  <label className="block mb-1">Asociar a Clase</label>
+                  <label className="block mb-1" htmlFor="class-exam-module">Módulo de la clase</label>
+                  <select id="class-exam-module" value={classExamModuleId} onChange={e => { setClassExamModuleId(e.target.value); setExamForm({ ...examForm, lessonId: '', moduleId: '' }); }} className="w-full p-3 mb-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm">
+                    <option value="">-- Sin vincular por ahora --</option>
+                    {curriculum.map(m => <option key={m._id} value={m._id}>{m.title}</option>)}
+                  </select>
+                  <label className="block mb-1" htmlFor="class-exam-lesson">Clase a vincular</label>
                   <select
+                    id="class-exam-lesson"
+                    disabled={!classExamModuleId}
+                    required={!!classExamModuleId}
                     value={examForm.lessonId}
                     onChange={(e) => setExamForm({ ...examForm, lessonId: e.target.value, moduleId: '' })}
                     className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-sm"
                   >
-                    <option value="">-- Ninguna por ahora --</option>
-                    {allLessons.map((l) => (
+                    <option value="">{classExamModuleId ? '-- Seleccioná una clase --' : '-- Elegí primero un módulo --'}</option>
+                    {(curriculum.find(m => m._id === classExamModuleId)?.lessons || []).map((l) => (
                       <option key={l._id} value={l._id}>
                         {l.title}
                       </option>

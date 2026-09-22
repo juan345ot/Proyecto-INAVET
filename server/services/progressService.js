@@ -53,7 +53,16 @@ export async function canAccessLesson(studentId, lessonId) {
 
 export async function canAccessExam(studentId, exam) {
   if (!exam || exam.status !== 'ACTIVE') return { allowed: false, reason: 'Examen no disponible' };
-  if (!exam.moduleId) return canAccessLesson(studentId, exam.lessonId);
+  if (!exam.moduleId) {
+    const access = await canAccessLesson(studentId, exam.lessonId);
+    if (!access.allowed) return access;
+    const materials = await Material.find({ lessonId: exam.lessonId }).select('_id').lean();
+    const viewed = new Set((access.progress.materialsViewed || []).map(idOf));
+    if (!materials.every(material => viewed.has(idOf(material)))) {
+      return { allowed: false, reason: 'Marcá como visto todo el material de la clase antes de rendir el examen.' };
+    }
+    return access;
+  }
   if (exam.lessonId || !await activeStudent(studentId)) return { allowed: false, reason: 'Acceso denegado' };
   const [module] = await getCurriculum(studentId, exam.moduleId);
   const final = module?.finalExam;

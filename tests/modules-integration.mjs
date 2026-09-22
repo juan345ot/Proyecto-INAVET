@@ -45,8 +45,16 @@ try {
   await req('/api/student/lesson/'+a2._id,'GET',undefined,student,403);await req('/api/student/lesson/'+h1._id,'GET',undefined,student,403);
   await req('/api/student/exam/'+exams[1]._id,'GET',undefined,student,403);await submit(exams[1],true,403);await submit(final,true,403);
   assert.equal(await ExamAttempt.countDocuments(),0);await mark(a1,materials[2],404);
-  assert.equal((await submit(exams[0])).passed,true);await req('/api/student/lesson/'+a2._id,'GET',undefined,student,403);
-  await mark(a1,materials[0]);await req('/api/student/lesson/'+a2._id);await req('/api/student/lesson/'+b2._id,'GET',undefined,student,403);
+  await req('/api/student/exam/'+exams[0]._id,'GET',undefined,student,403);
+  await submit(exams[0],true,403);
+  const additional = await Material.create({title:'Complementario',lessonId:a1._id,type:'TEXT',required:false});
+  await mark(a1,materials[0]);
+  await submit(exams[0],true,403); // ALL current material, not only required material.
+  await mark(a1,additional);
+  await req('/api/student/exam/'+exams[0]._id);
+  assert.equal((await submit(exams[0])).passed,true);
+  await mark(a1,additional); await submit(exams[0],true,403); await mark(a1,additional);
+  await req('/api/student/lesson/'+a2._id);await req('/api/student/lesson/'+b2._id,'GET',undefined,student,403);
   await mark(a2,materials[1]);await submit(final,true,403);assert.equal((await submit(exams[1],false)).passed,false);await submit(final,true,403);await submit(exams[1]);
   assert.equal((await dashboard()).modules[0].finalExam.status,'AVAILABLE');
   await submit(final,false,403);
@@ -86,8 +94,13 @@ try {
   await req('/api/admin/exams/'+final._id,'PUT',{moduleId:b._id},admin,400);
   await req('/api/admin/exams','POST',{title:'Banco sin clase'},admin,201);
   await req('/api/admin/exams','POST',{title:'Otro sin clase'},admin,201);
+  await Question.updateMany({examId:exams[0]._id},{$set:{order:20}});
+  await Question.updateMany({examId:exams[1]._id},{$set:{order:1}});
   const bank=await req('/api/admin/exams/'+final._id+'/question-bank','GET',undefined,admin);
   assert.equal(bank.length,2);
+  assert.deepEqual(bank.map(q=>String(q.sourceLessonId)),[String(a1._id),String(a2._id)]);
+  await req('/api/admin/exams/'+exams[0]._id,'PUT',{classModuleId:b._id,lessonId:a1._id},admin,400);
+  await req('/api/admin/exams/'+exams[0]._id,'PUT',{classModuleId:a._id,lessonId:a1._id},admin);
   const foreignQ=await Question.findOne({examId:exams[2]._id});
   await req('/api/admin/exams/'+final._id+'/copy-questions','POST',{questionIds:[String(foreignQ._id)]},admin,400);
   const copyPath='/api/admin/exams/'+final._id+'/copy-questions';
@@ -103,6 +116,18 @@ try {
   await submit(finalB,true,403);
   await req('/api/student/final-exams/'+finalB._id+'/request','POST');
   assert.equal((await FinalAuthorization.findOne({examId:finalB._id})).status,'PENDING');
+  const firstPage = await req('/api/admin/final-authorizations?page=1','GET',undefined,admin);
+  assert.equal(firstPage[0].status,'PENDING');
+  await req('/api/admin/final-authorizations?page=0','GET',undefined,admin,400);
+  for(let i=0;i<5;i++){
+    const person=await makeUser('pagination_test_'+i,'STUDENT');
+    await FinalAuthorization.create({studentId:person._id,examId:final._id,status:'REVOKED'});
+  }
+  const page1=await req('/api/admin/final-authorizations?page=1','GET',undefined,admin);
+  const page2=await req('/api/admin/final-authorizations?page=2','GET',undefined,admin);
+  assert.equal(page1.length,5);assert.equal(page2.length,2);
+  assert.equal(new Set([...page1,...page2].map(r=>r._id)).size,7);
+  assert.equal((await req('/api/admin/final-authorizations?page=999','GET',undefined,admin)).length,2);
   await submit(finalB,true,403);
   const another=await makeUser('other_student','STUDENT');
   await req('/api/student/exam/'+final._id,'GET',undefined,another,403);

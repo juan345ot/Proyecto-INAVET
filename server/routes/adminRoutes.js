@@ -477,6 +477,7 @@ async function saveExam(req, res) {
     if (req.body.moduleId !== undefined) exam.moduleId = req.body.moduleId || null;
     if (exam.lessonId && exam.moduleId) throw new Error('Elegí una clase o un módulo, no ambos.');
     if (exam.lessonId && !await Lesson.exists({ _id: exam.lessonId })) throw new Error('Clase inexistente');
+    if (req.body.classModuleId && (!exam.lessonId || exam.moduleId || !await Lesson.exists({ _id: exam.lessonId, moduleId: req.body.classModuleId }))) throw new Error('La clase seleccionada no pertenece al módulo indicado.');
     if (exam.moduleId && !await Module.exists({ _id: exam.moduleId })) throw new Error('Módulo inexistente');
     if (req.params.id && (previousModule !== String(exam.moduleId || '') || previousLesson !== String(exam.lessonId || '')) &&
       (await ExamAttempt.exists({ examId: exam._id }) || await FinalAuthorization.exists({ examId: exam._id }))) throw new Error('No se puede cambiar la asociación de un examen con intentos o solicitudes. Creá otro examen para conservar el historial.');

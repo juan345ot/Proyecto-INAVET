@@ -148,6 +148,7 @@ const StudentLesson = () => {
   const { lesson, materials, examAvailable, examId, exam, progress } = lessonData;
   const youtubeEmbed = getEmbedYoutubeUrl(lesson.videoUrl);
   const isLessonComplete = progress?.isCompleted;
+  const remainingMaterials = materials.filter(material => !progress?.materialsViewed?.includes(material._id)).length;
 
   return (
     <StudentLayout>
@@ -256,7 +257,7 @@ const StudentLesson = () => {
 
                       <button
                         onClick={() => handleToggleMaterial(mat._id)}
-                        disabled={togglingMaterialId === mat._id}
+                        disabled={!!togglingMaterialId}
                         className={`px-4 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                           isViewed
                             ? 'bg-emerald-700 text-white shadow-xs'
@@ -294,12 +295,17 @@ const StudentLesson = () => {
                 {exam?.title || 'Examen de esta clase'}
               </h3>
               <p className="text-sm text-slate-500">
-                Aprobá el examen{exam ? ` con al menos ${exam.passingScorePercent}%` : ''} y marcá todos los materiales obligatorios como vistos para completar esta clase y avanzar dentro del módulo.
+                Primero marcá todo el material como visto. Luego aprobá el examen{exam ? ` con al menos ${exam.passingScorePercent}%` : ''} para completar esta clase y avanzar dentro del módulo.
               </p>
             </div>
 
             <div className="shrink-0 flex items-center gap-3">
-              {progress?.examPassed ? (
+              {remainingMaterials > 0 ? (
+                <div className="space-y-2 max-w-xs">
+                  <button disabled className="px-5 py-3 rounded-2xl bg-slate-200 text-slate-700 font-bold text-sm cursor-not-allowed">Examen bloqueado</button>
+                  <p role="status" className="text-sm text-slate-700">Falta marcar como visto {remainingMaterials} {remainingMaterials === 1 ? 'material' : 'materiales'}.</p>
+                </div>
+              ) : progress?.examPassed ? (
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-100 text-emerald-800 font-bold text-xs uppercase tracking-wider">
                     <CheckCircle2 size={16} /> Aprobado

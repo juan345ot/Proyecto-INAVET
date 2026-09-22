@@ -6,6 +6,7 @@ import Question from '../models/Question.js';
 import User from '../models/User.js';
 import FinalAuthorization from '../models/FinalAuthorization.js';
 import { getCurriculum } from '../services/progressService.js';
+import { academicOrder, idOf } from '../services/curriculumRules.js';
 
 export const studentFinalRoutes = express.Router();
 export const adminFinalRoutes = express.Router();
@@ -39,6 +40,26 @@ studentFinalRoutes.post('/final-exams/:examId/request', async (req, res) => {
 
 adminFinalRoutes.get('/final-authorizations', async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store');
+    if (req.query.page !== undefined) {
+      const page = Number(req.query.page);
+      const pageSize = 5;
+      if (!Number.isSafeInteger(page) || page < 1) throw new Error('Página inválida');
+      const total = await FinalAuthorization.countDocuments();
+      const pages = Math.max(1, Math.ceil(total / pageSize));
+      const current = Math.min(page, pages);
+      const rows = await FinalAuthorization.aggregate([
+        { $addFields: { pendingPriority: { $cond: [{ $eq: ['$status', 'PENDING'] }, 0, 1] } } },
+        { $sort: { pendingPriority: 1, requestedAt: -1, _id: -1 } },
+        { $skip: (current - 1) * pageSize }, { $limit: pageSize },
+        { $project: { pendingPriority: 0 } },
+      ]);
+      const data = await FinalAuthorization.populate(rows, [
+        { path: 'studentId', select: 'firstName lastName username status' },
+        { path: 'examId', select: 'title moduleId maxAttemptsPerAuthorization status', populate: { path: 'moduleId', select: 'title' } },
+      ]);
+      return res.json({ success: true, data, pagination: { page: current, pages, total, pageSize } });
+    }
     const data = await FinalAuthorization.find().sort({ requestedAt: -1 }).limit(1000)
       .populate('studentId', 'firstName lastName username status')
       .populate({ path: 'examId', select: 'title moduleId maxAttemptsPerAuthorization status', populate: { path: 'moduleId', select: 'title' } });
@@ -69,10 +90,14 @@ adminFinalRoutes.post('/final-authorizations/:id/:action', async (req, res) => {
 async function questionBank(examId) {
   const final = await Exam.findById(examId);
   if (!final?.moduleId) throw new Error('Seleccioná un examen final vinculado a un módulo');
-  const lessons = await Lesson.find({ moduleId: final.moduleId }).select('_id');
-  const exams = await Exam.find({ lessonId: { $in: lessons.map(l => l._id) }, moduleId: null }).select('_id title');
-  const questions = await Question.find({ examId: { $in: exams.map(e => e._id) } }).sort({ order: 1 }).lean();
-  return questions.map(q => ({ ...q, sourceExamTitle: exams.find(e => String(e._id) === String(q.examId))?.title }));
+  const lessons = (await Lesson.find({ moduleId: final.moduleId }).select('_id title order createdAt').lean()).sort(academicOrder);
+  const exams = await Exam.find({ lessonId: { $in: lessons.map(l => l._id) }, moduleId: null }).select('_id title lessonId');
+  const questions = await Question.find({ examId: { $in: exams.map(e => e._id) } }).lean();
+  return lessons.flatMap(lesson => {
+    const exam = exams.find(e => idOf(e.lessonId) === idOf(lesson));
+    return questions.filter(q => idOf(q.examId) === idOf(exam)).sort(academicOrder)
+      .map(q => ({ ...q, sourceExamTitle: exam.title, sourceLessonTitle: lesson.title, sourceLessonId: lesson._id }));
+  });
 }
 adminFinalRoutes.get('/exams/:examId/question-bank', async (req, res) => {
   try { res.json({ success: true, data: await questionBank(req.params.examId) }); }
@@ -83,8 +108,9 @@ adminFinalRoutes.post('/exams/:examId/copy-questions', async (req, res) => {
     const ids = req.body.questionIds;
     if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => !mongoose.isValidObjectId(id))) throw new Error('Elegí entre 1 y 100 preguntas válidas');
     const bank = await questionBank(req.params.examId);
-    const selected = [...new Set(ids)].map(id => bank.find(q => String(q._id) === id));
-    if (selected.some(q => !q)) throw new Error('Solo podés copiar preguntas de clases de este mismo módulo');
+    const selectedIds = new Set(ids);
+    const selected = bank.filter(q => selectedIds.has(String(q._id)));
+    if (selected.length !== selectedIds.size) throw new Error('Solo podés copiar preguntas de clases de este mismo módulo');
     const last = await Question.findOne({ examId: req.params.examId }).sort({ order: -1 });
     const result = await Question.bulkWrite(selected.map((q, i) => ({ updateOne: {
       filter: { examId: new mongoose.Types.ObjectId(req.params.examId), sourceQuestionId: q._id },

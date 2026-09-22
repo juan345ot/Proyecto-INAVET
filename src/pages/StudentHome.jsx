@@ -11,6 +11,7 @@ import {
   Award,
   Sparkles,
   ChevronRight,
+  ChevronDown,
   Clock,
 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
@@ -26,24 +27,43 @@ const StudentHome = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let active = true;
+    let pending = false;
+    const controller = new AbortController();
     const fetchDashboard = async () => {
+      if (pending) return;
+      pending = true;
       try {
         const res = await apiFetch('/api/student/dashboard', {
           headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store', signal: controller.signal,
         });
         const resData = await res.json();
+        if (!active) return;
         if (resData.success) {
           setData(resData.data);
+          setError('');
         } else {
+          if (res.status === 401 || res.status === 403) setData(null);
           setError(resData.message || 'Error al cargar el aula');
         }
       } catch (err) {
-        setError('Error de conexión con el servidor');
+        if (active) setError('No pudimos actualizar el aula. Se reintentará automáticamente.');
       } finally {
-        setLoading(false);
+        pending = false;
+        if (active) setLoading(false);
       }
     };
     fetchDashboard();
+    const refreshVisible = () => { if (document.visibilityState === 'visible') fetchDashboard(); };
+    const interval = setInterval(refreshVisible, 10000);
+    window.addEventListener('focus', refreshVisible);
+    document.addEventListener('visibilitychange', refreshVisible);
+    return () => {
+      active = false; controller.abort(); clearInterval(interval);
+      window.removeEventListener('focus', refreshVisible);
+      document.removeEventListener('visibilitychange', refreshVisible);
+    };
   }, [token, refresh]);
 
   const requestFinal = async (examId) => {
@@ -67,7 +87,7 @@ const StudentHome = () => {
     );
   }
 
-  if (error || !data) {
+  if (!data) {
     return (
       <StudentLayout>
         <div className="p-8 bg-red-50 text-red-700 rounded-3xl border border-red-200 text-center max-w-lg mx-auto">
@@ -84,6 +104,7 @@ const StudentHome = () => {
   return (
     <StudentLayout>
       <div className="space-y-10">
+        {error && <p role="status" className="p-3 rounded-xl bg-amber-50 text-amber-900">{error}</p>}
         {/* Banner de Bienvenida y Progreso General */}
         <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-secondary to-[#75409c] p-6 sm:p-8 md:p-10 text-white shadow-xl shadow-secondary/15">
           <div className="relative z-10 max-w-2xl">
@@ -174,19 +195,16 @@ const StudentHome = () => {
 
           <div className="space-y-6">
             {modules.map((mod) => (
-              <div
+              <details
                 key={mod._id}
-                className="bg-[#d8e2ee] rounded-3xl border border-[#b7c8dc] overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                className="group bg-[#d8e2ee] rounded-3xl border border-[#b7c8dc] overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
                 {/* Cabecera del Módulo */}
-                <div className="p-4 sm:p-6 bg-[#cbd9e9] border-b border-[#b7c8dc] flex flex-wrap gap-3 items-center justify-between">
+                <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-secondary p-4 sm:p-6 bg-[#cbd9e9] border-b border-[#b7c8dc] flex flex-wrap gap-3 items-center justify-between">
                   <div>
                     <h3 className="text-lg font-black text-slate-800 mt-0.5">
                       {mod.title}
                     </h3>
-                    {mod.description && (
-                      <p className="text-xs text-slate-700 mt-1">{mod.description}</p>
-                    )}
                   </div>
 
                   {mod.status === 'COMPLETED' ? (
@@ -202,8 +220,10 @@ const StudentHome = () => {
                       {mod.status === 'AVAILABLE' ? 'Disponible' : 'En curso'}
                     </span>
                   )}
-                </div>
+                  <span className="inline-flex items-center gap-2 text-xs font-bold text-slate-700"><span className="group-open:hidden">Desplegar</span><span className="hidden group-open:inline">Plegar</span><ChevronDown size={18} className="transition-transform group-open:rotate-180" /></span>
+                </summary>
 
+                {mod.description && <p className="px-4 sm:px-6 pt-4 text-sm text-slate-700">{mod.description}</p>}
                 <p className="px-4 sm:px-6 py-3 text-xs text-slate-600">Podés comenzar este módulo sin completar otros. Sus clases se realizan en secuencia.</p>
                 {/* Listado de Clases */}
                 <div className="divide-y divide-slate-100">
@@ -287,14 +307,16 @@ const StudentHome = () => {
                   </div>
                   {mod.finalExam && (mod.finalExam.status === 'LOCKED'
                     ? <span className="text-xs font-bold text-slate-600">Bloqueado: completá todas las clases</span>
-                    : mod.finalExam.status === 'COMPLETED' || (mod.finalExam.authorization?.status === 'APPROVED' && mod.finalExam.authorization.attemptsRemaining > 0)
-                      ? <Link to={`/aula/examen/${mod.finalExam._id}`} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold">{mod.finalExam.status === 'COMPLETED' ? 'Aprobado · Ver examen' : 'Rendir examen final'}</Link>
+                    : mod.finalExam.status === 'COMPLETED'
+                      ? <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-100 text-emerald-800 text-sm font-bold"><CheckCircle size={18} /> Aprobado</span>
+                    : mod.finalExam.authorization?.status === 'APPROVED' && mod.finalExam.authorization.attemptsRemaining > 0
+                      ? <Link to={`/aula/examen/${mod.finalExam._id}`} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold">Rendir examen final</Link>
                       : <div className="space-y-2 text-sm text-slate-700">
                         <p>{mod.finalExam.authorization?.status === 'PENDING' ? 'Solicitud enviada. Esperá la autorización del administrador.' : mod.finalExam.authorization?.status === 'EXHAUSTED' ? 'Agotaste tus intentos. Pedí una nueva autorización.' : mod.finalExam.authorization?.status === 'REVOKED' ? 'Permiso revocado. Podés solicitar autorización nuevamente.' : 'Necesitás autorización del administrador para rendir.'}</p>
                         <button disabled={requesting === mod.finalExam._id || mod.finalExam.authorization?.status === 'PENDING'} onClick={() => requestFinal(mod.finalExam._id)} className="px-4 py-2 rounded-xl bg-secondary text-white text-xs font-bold disabled:opacity-50">{mod.finalExam.authorization?.status === 'PENDING' ? 'Autorización pendiente' : 'Solicitar autorización'}</button>
                       </div>)}
                 </div>
-              </div>
+              </details>
             ))}
           </div>
         </div>
