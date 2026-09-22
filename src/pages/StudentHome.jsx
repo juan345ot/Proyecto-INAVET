@@ -144,7 +144,7 @@ const StudentHome = () => {
                 </span>
                 {continuingModuleTitle && (
                   <p className="text-sm font-bold text-slate-700 break-words">
-                    Módulo: {continuingModuleTitle}
+                    {continuingModuleTitle}
                   </p>
                 )}
                 <h3 className="text-xl md:text-2xl font-black text-slate-800">
